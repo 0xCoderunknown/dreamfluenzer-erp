@@ -1,0 +1,27 @@
+{
+  "_comment": "Demo configuration. Copy this file to config.json and fill in your real credentials. Never commit config.json.",
+  "firebase": {
+    "apiKey": "AIzaSyDEMO_PLACEHOLDER_KEY_DO_NOT_USE",
+    "appId": "1:000000000000:web:0000000000000000000000",
+    "messagingSenderId": "000000000000",
+    "projectId": "your-firebase-project-id",
+    "authDomain": "your-firebase-project-id.firebaseapp.com",
+    "storageBucket": "your-firebase-project-id.appspot.com"
+  },
+  "agency": {
+    "agencyName": "MY AGENCY",
+    "portalTitle": "Agency ERP",
+    "legalEntity": "My Agency Pvt Ltd",
+    "location": "City, State, Country",
+    "defaultCity": "City",
+    "websiteUrl": "myagency.com",
+    "adminDisplayName": "Agency Admin",
+    "adminGreetingName": "Admin",
+    "loginRequired": false,
+    "bankName": "Your Bank Name",
+    "accountNumber": "000000000000",
+    "ifscCode": "DEMO0000000",
+    "upiId": "agency@yourbank",
+    "gstNumber": "00XXXXX0000X0Z0"
+  }
+}

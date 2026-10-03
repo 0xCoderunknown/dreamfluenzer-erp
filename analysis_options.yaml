@@ -1,0 +1,18 @@
+analyzer:
+  exclude:
+    - build/**
+    - web/**
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # ─── THE CONST CRUSADE ───
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    unnecessary_const: true
+
+    # ─── BEST PRACTICES ───
+    avoid_print: true # Forces you to use debugPrint or a logger
+    prefer_is_empty: true
+    prefer_is_not_empty: true

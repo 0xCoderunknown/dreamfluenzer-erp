@@ -1,0 +1,45 @@
+# Miscellaneous Operating System Files
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+.history
+combined_providers.txt   # Ignore temporary terminal dump files
+
+# IntelliJ / Android Studio IDE Workspace Files
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code IDE Workspace Config
+.vscode/
+
+# Flutter / Dart Core Package Artifacts
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# ==========================================
+# TITANIUM UPGRADE: Firebase Web Security
+# ==========================================
+
+# Firebase Core Web Initialization (CRITICAL CONFIG)
+lib/firebase_options.dart # Hides your exact app ID vectors from the repo history
+
+# Firebase Hosting, CLI Functions & Cache
+.firebase/
+firebase-debug.log
+firebase-debug.rc
+.firebaserc
+
+# Environment Configurations
+*.env
+.env
+
+# Private Local Credentials & Data (NEVER COMMIT)
+assets/config/config.json
+*.local.json

@@ -1,0 +1,31 @@
+name: dreamfluenzer_erp
+description: "DreamFluenzer ERP – Agency Management Platform"
+publish_to: 'none' # Explicitly prevents accidental publishing of your private agency code
+version: 0.8.0
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cloud_firestore: ^6.10.0
+  firebase_auth: ^6.7.0
+  firebase_core: ^4.15.0
+  go_router: ^18.0.2
+  google_fonts: ^9.0.0
+  intl: ^0.20.3
+  pdf: ^3.13.1
+  printing: ^5.15.1
+  provider: ^6.1.5+1
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/config/

@@ -1,0 +1,49 @@
+// SETUP REQUIRED
+//
+// This file is NOT included in the repository because it contains your private Firebase credentials.
+//
+// HOW TO SET UP:
+// 1. Go to your Firebase Console → Project Settings → Your Apps → Web App.
+// 2. Copy the firebaseConfig object values into the fields below.
+//    OR run `flutterfire configure` to generate this file automatically.
+// 3. Save this file as `lib/firebase_options.dart` (without the .example extension).
+// 4. NEVER commit `lib/firebase_options.dart` — it is gitignored for your safety.
+//
+// Alternatively, fill in `assets/config/config.json` (see config.demo.json for the schema).
+// The app will load Firebase credentials from that file automatically at startup.
+
+import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) return web;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for android. '
+          'Reconfigure using FlutterFire CLI.',
+        );
+      case TargetPlatform.iOS:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios. '
+          'Reconfigure using FlutterFire CLI.',
+        );
+      default:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions are not supported for this platform.',
+        );
+    }
+  }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'YOUR_API_KEY',
+    appId: 'YOUR_APP_ID',
+    messagingSenderId: 'YOUR_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    measurementId: 'YOUR_MEASUREMENT_ID',
+  );
+}
