@@ -4,7 +4,7 @@ publish_to: 'none' # Explicitly prevents accidental publishing of your private a
 version: 0.8.0
 
 environment:
-  sdk: ^3.13.4
+  sdk: ^3.13.5
 
 dependencies:
   flutter:
@@ -28,4 +28,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/config/
+    - assets/config/
