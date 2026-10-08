@@ -4,6 +4,22 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ---
 
+## [0.8.1] — 2026-10-08 — Modular Architecture Refactoring & Security Hardening
+
+### Architectural Refactoring (Maintainability & Single Responsibility)
+- **Campaign & Project Widgets:** Decomposed monolithic 1,600+ line `campaign_widgets.dart` into `campaign_list.dart`, `campaign_panel.dart`, and `expandable_creator_card.dart` with backwards-compatible barrel export.
+- **Creator Dialogs:** Separated `creator_dialogs.dart` into standalone `creator_profile_dialog.dart` (CRM dashboard) and `add_edit_creator_dialog.dart` (onboarding/edit form).
+- **Project Dialogs:** Split `project_dialogs.dart` into `project_creation_wizard.dart`, `assign_creator_dialog.dart`, and `add_campaign_dialog.dart`.
+- **CRM Dialogs:** Separated `client_profile_dialog.dart`, `add_client_dialog.dart`, `lead_overview_dialog.dart`, and `add_edit_lead_form_dialog.dart`.
+- **Audit System Isolation:** Extracted `dream_audit_log_dialog.dart` from `ui_kit.dart` to isolate operational event timeline modals from pure design tokens.
+- **Proposal Screen:** Extracted accounting and commercials panel into `proposal_commercials_sidebar.dart` and created `proposal_widgets.dart` barrel export, reducing `proposal_screen.dart` from 868L to 484L.
+- **PDF Theme Consolidation:** Unified procedural design tokens (`PdfTheme`) and font bundle (`PdfFontSet`) in `services/pdf/pdf_theme.dart` across proposal and invoice builders.
+
+### Security & Open Source Readiness
+- **Firebase Options Guard:** Enforced Git exclusion for `lib/firebase_options.dart` and wildcards in `.gitignore`, keeping private project credentials out of version control while maintaining `lib/firebase_options.dart.example`.
+
+---
+
 ## [0.8.0] — 2026-10-03 — Initial Open Source Release
 
 ### Core Features

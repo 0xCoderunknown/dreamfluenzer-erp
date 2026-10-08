@@ -13,7 +13,7 @@ Thank you for your interest! This project is maintained primarily by AI agents, 
 **Setup:**
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git && cd YOUR_REPO
+git clone https://github.com/0xCoderunknown/dreamfluenzer-erp.git && cd dreamfluenzer-erp
 
 # 2. Install dependencies
 flutter pub get

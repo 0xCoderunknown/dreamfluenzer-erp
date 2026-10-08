@@ -2,7 +2,7 @@
 
 > **Open-source, AI-maintained operational platform for influencer marketing agencies.**
 
-[![Flutter CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/flutter_ci.yml)
+[![Flutter CI](https://github.com/0xCoderunknown/dreamfluenzer-erp/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/0xCoderunknown/dreamfluenzer-erp/actions/workflows/flutter_ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)](https://flutter.dev)
 
@@ -16,7 +16,7 @@ A production-grade Flutter web app for managing the full lifecycle of a creator/
 
 ```bash
 # 1. Clone
-git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git && cd YOUR_REPO
+git clone https://github.com/0xCoderunknown/dreamfluenzer-erp.git && cd dreamfluenzer-erp
 
 # 2. Install dependencies
 flutter pub get

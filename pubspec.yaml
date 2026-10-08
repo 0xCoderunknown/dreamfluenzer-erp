@@ -1,7 +1,10 @@
 name: dreamfluenzer_erp
 description: "DreamFluenzer ERP – Agency Management Platform"
-publish_to: 'none' # Explicitly prevents accidental publishing of your private agency code
-version: 0.8.0
+publish_to: 'none'
+version: 0.8.1
+homepage: https://github.com/0xCoderunknown/dreamfluenzer-erp
+repository: https://github.com/0xCoderunknown/dreamfluenzer-erp
+issue_tracker: https://github.com/0xCoderunknown/dreamfluenzer-erp/issues
 
 environment:
   sdk: ^3.13.5

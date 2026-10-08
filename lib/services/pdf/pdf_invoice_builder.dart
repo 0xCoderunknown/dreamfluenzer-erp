@@ -9,50 +9,10 @@ import '../../engines/revenue_engine.dart'; // Financial math and calculation fo
 import '../../models/campaign_model.dart';
 import '../../models/client_model.dart';
 import '../../models/project_model.dart';
+import 'pdf_theme.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────────────────
-class _Dt {
-  static const PdfColor brandPurple = PdfColor.fromInt(0xFF6C3FC5);
-  static const PdfColor brandPurpleMid = PdfColor.fromInt(0xFFD6C5F5);
-  static const PdfColor brandPurpleLight = PdfColor.fromInt(0xFFF0E9FF);
-  static const PdfColor inkDark = PdfColor.fromInt(0xFF0F0A1E);
-  static const PdfColor inkMid = PdfColor.fromInt(0xFF374151);
-  static const PdfColor inkMuted = PdfColor.fromInt(0xFF6B7280);
-  static const PdfColor inkGhost = PdfColor.fromInt(0xFF9CA3AF);
-
-  static const PdfColor surfaceWhite = PdfColors.white;
-  static const PdfColor surfaceNeutral = PdfColor.fromInt(0xFFF9FAFB);
-  static const PdfColor surfaceNeutralDeep = PdfColor.fromInt(0xFFF3F4F6);
-  static const PdfColor surfaceBorder = PdfColor.fromInt(0xFFE5E7EB);
-  static const PdfColor successGreen = PdfColor.fromInt(0xFF059669);
-  static const PdfColor successGreenLight = PdfColor.fromInt(0xFFECFDF5);
-
-  static const double spHalf = 3.0;
-  static const double sp1 = 6.0;
-  static const double sp2 = 12.0;
-  static const double sp3 = 18.0;
-  static const double sp4 = 24.0;
-
-  static const double tsH1 = 20.0;
-  static const double tsH2 = 15.0;
-  static const double tsH3 = 11.5;
-  static const double tsBody = 9.5;
-  static const double tsCaption = 8.5;
-  static const double tsMicro = 7.5;
-}
-
-class _FontSet {
-  final pw.Font regular;
-  final pw.Font semiBold;
-  final pw.Font bold;
-
-  const _FontSet({
-    required this.regular,
-    required this.semiBold,
-    required this.bold,
-  });
-}
+typedef _Dt = PdfTheme;
+typedef _FontSet = PdfFontSet;
 
 class _InventoryLineItem {
   final String description;
@@ -67,11 +27,7 @@ class _InventoryLineItem {
 }
 
 class PdfInvoiceBuilder {
-  static _FontSet _fonts() => _FontSet(
-    regular: pw.Font.helvetica(),
-    semiBold: pw.Font.helveticaBold(),
-    bold: pw.Font.helveticaBold(),
-  );
+  static _FontSet _fonts() => PdfFontSet.helvetica();
 
   static Future<void> generateInvoicePdf(
     Project project,

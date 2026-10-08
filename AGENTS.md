@@ -1,7 +1,7 @@
 # 🤖 AGENTS.md — AI Maintainer System Guide
 
 > **Target Audience:** Autonomous AI coding agents maintaining, extending, or refactoring DreamFluenzer ERP.  
-> **Human Role:** Edits constants in [`lib/config/agency_config.dart`](file:///K:/Android/dreamfluenzer_erp/lib/config/agency_config.dart). Does NOT touch application architecture.  
+> **Human Role:** Edits constants in [`lib/config/agency_config.dart`](lib/config/agency_config.dart). Does NOT touch application architecture.  
 > **AI Role:** 100% responsible for feature implementation, bug fixes, state management, and maintaining architectural integrity.
 
 ---
@@ -22,7 +22,7 @@ lib/
 ├── services/      # IO wrappers (FirestoreService, AuditLoggerService, PDF builders)
 ├── theme/         # Central design tokens & dynamic status color resolvers
 ├── utils/         # Pure validators and string formatters
-└── widgets/       # Modular, reusable presentation components
+└── widgets/       # Modular, reusable presentation components (with barrel exports)
 ```
 
 ---
@@ -36,7 +36,7 @@ When modifying any part of this system, you must strictly uphold these domain la
 * **Never sum cash and barter into a single total.** You cannot pay creator invoices or taxes with barter product inventory.
 
 ### Law 2: The Froyo Rules (Project Closure & Cash Protection)
-* Encapsulated in [`lib/domain/froyo_rules.dart`](file:///K:/Android/dreamfluenzer_erp/lib/domain/froyo_rules.dart).
+* Encapsulated in [`lib/domain/froyo_rules.dart`](lib/domain/froyo_rules.dart).
 * **Archive Lock:** A project can **never** be moved to `ProjectStatus.completed` or archived if:
   1. It has 0 campaigns.
   2. Any assigned creator is still in an active pipeline status (`draftRequested`, `reviewing`, `changesRequested`, `awaitingClientSignoff`).
@@ -45,16 +45,20 @@ When modifying any part of this system, you must strictly uphold these domain la
 
 ### Law 3: Atomic State Mutations with Audit Logging
 * All multi-document changes (e.g., project onboarding, archiving, deleting projects with nested campaigns) must use `WriteBatch` or `Transaction`.
-* Every mutation that alters creator money, assignment, or project status must log an event via [`AuditLoggerService`](file:///K:/Android/dreamfluenzer_erp/lib/services/audit_logger_service.dart).
+* Every mutation that alters creator money, assignment, or project status must log an event via [`AuditLoggerService`](lib/services/audit_logger_service.dart).
+
+### Law 4: Modular Presentation & Barrel Exports
+* Keep presentation files under 500 lines for maximum AI maintainability and zero search/replace collisions.
+* Component domains (`project`, `creator`, `client`, `lead`, `proposal`, `common`) maintain root barrel files (e.g. `campaign_widgets.dart`, `creator_dialogs.dart`, `proposal_widgets.dart`) that re-export sub-components to ensure 100% backwards-compatible screen imports.
 
 ---
 
 ## 3. Human Configuration Boundary & Dual-Tier Credentials
 
 * **Dual-Tier Config Law:** 
-  - Private credentials (real Firebase API keys, real bank accounts, real UPI IDs) belong **exclusively** in [`assets/config/config.json`](file:///K:/Android/dreamfluenzer_erp/assets/config/config.json) (which is `.gitignore`d).
-  - Open-source defaults belong in [`assets/config/config.demo.json`](file:///K:/Android/dreamfluenzer_erp/assets/config/config.demo.json) and [`lib/config/agency_config.dart`](file:///K:/Android/dreamfluenzer_erp/lib/config/agency_config.dart).
-  - [`AppConfig.load()`](file:///K:/Android/dreamfluenzer_erp/lib/config/app_config.dart) dynamically loads `config.json` when present, or gracefully falls back to `config.demo.json`.
+  - Private credentials (real Firebase API keys, real bank accounts, real UPI IDs) belong **exclusively** in [`assets/config/config.json`](assets/config/config.json) (which is `.gitignore`d).
+  - Open-source defaults belong in [`assets/config/config.demo.json`](assets/config/config.demo.json) and [`lib/config/agency_config.dart`](lib/config/agency_config.dart).
+  - [`AppConfig.load()`](lib/config/app_config.dart) dynamically loads `config.json` when present, or gracefully falls back to `config.demo.json`.
 * **Zero Secret Leakage:** Never hardcode URLs, private keys, company tax numbers, bank accounts, or credentials directly into Dart source files.
 
 ---

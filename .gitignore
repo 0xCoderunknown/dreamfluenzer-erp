@@ -4,7 +4,8 @@ Thumbs.db
 *.log
 *.swp
 .history
-combined_providers.txt   # Ignore temporary terminal dump files
+# Ignore temporary terminal dump files
+combined_providers.txt
 
 # IntelliJ / Android Studio IDE Workspace Files
 *.iml
@@ -28,7 +29,11 @@ combined_providers.txt   # Ignore temporary terminal dump files
 # ==========================================
 
 # Firebase Core Web Initialization (CRITICAL CONFIG)
-lib/firebase_options.dart # Hides your exact app ID vectors from the repo history
+lib/firebase_options.dart
+firebase_options.dart
+*firebase_options*.dart
+!lib/firebase_options.dart.example
+!firebase_options.dart.example
 
 # Firebase Hosting, CLI Functions & Cache
 .firebase/
