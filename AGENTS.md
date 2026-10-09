@@ -63,16 +63,43 @@ When modifying any part of this system, you must strictly uphold these domain la
 
 ---
 
-## 4. Verification Protocol (Run Before Concluding Any Task)
+## 4. AI Fast Navigation & Canonical Recipes
+
+> **Full Codebase Index:** Refer to [`SYSTEM_MAP.md`](SYSTEM_MAP.md) for 1-step symbol routing, collection schemas, and provider mappings.
+
+### Recipe 1: Modifying or Extending an Entity Model
+1. Update immutable class fields in `lib/models/<name>_model.dart`.
+2. Update `toMap()`, `fromMap()`, and `copyWith()`.
+3. If new test fields are needed, update [`test/fixtures/mock_factory.dart`](test/fixtures/mock_factory.dart).
+4. Run `flutter test test/models_serialization_test.dart` to verify roundtrip serialization passes without silent data corruption.
+
+### Recipe 2: Modifying Financial Calculations or Invariants
+1. Pure financial formulas belong **strictly** in [`lib/engines/revenue_engine.dart`](lib/engines/revenue_engine.dart).
+2. Business validation rules belong **strictly** in [`lib/domain/froyo_rules.dart`](lib/domain/froyo_rules.dart).
+3. Add a corresponding test case in [`test/revenue_engine_test.dart`](test/revenue_engine_test.dart) or [`test/froyo_rules_test.dart`](test/froyo_rules_test.dart).
+4. Run `flutter test`.
+
+### Recipe 3: Creating or Modifying UI Components
+1. Keep every presentation file strictly under **500 lines** (ideally 200–350 lines).
+2. Decompose sub-sections into sibling files in the same domain folder (e.g. `lib/widgets/project/`).
+3. Re-export all sub-modules through the domain's root barrel file (e.g. `project_widgets.dart`, `campaign_widgets.dart`).
+4. Screens must **only** import the root barrel file, never private sub-modules.
+
+---
+
+## 5. Verification Protocol (Run Before Concluding Any Task)
 
 Before reporting any coding task as complete, you must run and verify:
 
 ```bash
-# 1. Verify zero lint errors or warnings:
+# 1. Complete AI Invariant Gate (Line counts, secret leaks, analyzer, tests):
+dart run tool/verify_invariants.dart
+
+# 2. Fast Linter:
 flutter analyze
 
-# 2. Verify all unit and engine tests pass:
+# 3. Fast Test Suite:
 flutter test
 ```
 
-If either command fails, you must resolve the issue before responding to the user.
+If any check fails, you must resolve the issue before responding to the user.

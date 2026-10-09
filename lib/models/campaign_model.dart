@@ -208,16 +208,15 @@ class Campaign {
     );
   }
 
-  factory Campaign.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
+  factory Campaign.fromMap(Map<String, dynamic> data, {String? id}) {
     return Campaign(
-      id: doc.id,
+      id: id ?? data['id'] as String? ?? '',
       projectId: data['project_id'] ?? '',
       title: data['title'] ?? '',
       cycleEndDate: (data['cycle_end_date'] is Timestamp)
           ? (data['cycle_end_date'] as Timestamp).toDate()
           : DateTime.now(),
-      expenses: (data['expenses'] ?? 0.0).toDouble(),
+      expenses: (data['expenses'] as num?)?.toDouble() ?? 0.0,
       inventoryPool: (data['inventory_pool'] as List? ?? [])
           .map((i) => CampaignInventory.fromMap(i))
           .toList(),
@@ -225,6 +224,11 @@ class Campaign {
           .map((c) => AssignedCreator.fromMap(c))
           .toList(),
     );
+  }
+
+  factory Campaign.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    return Campaign.fromMap(data, id: doc.id);
   }
 
   Map<String, dynamic> toMap() => {

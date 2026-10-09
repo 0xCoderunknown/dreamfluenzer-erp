@@ -12,7 +12,11 @@ linter:
     prefer_const_literals_to_create_immutables: true
     unnecessary_const: true
 
-    # ─── BEST PRACTICES ───
+    # ─── BEST PRACTICES & AI SAFEGUARDS ───
     avoid_print: true # Forces you to use debugPrint or a logger
+    unawaited_futures: true # Prevents forgotten await in async Firestore operations
+    always_declare_return_types: true # Prevents accidental dynamic returns
+    cancel_subscriptions: true # Prevents memory leaks from Firestore streams
+    close_sinks: true # Prevents stream controller leaks
     prefer_is_empty: true
     prefer_is_not_empty: true
