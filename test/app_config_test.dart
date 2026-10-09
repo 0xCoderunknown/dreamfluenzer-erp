@@ -7,7 +7,10 @@ void main() {
 
   group('AppConfig & Dynamic AgencyConfig Tests', () {
     test('Fallback to defaultDemoOptions when uninitialized', () {
-      expect(AppConfig.defaultDemoOptions.projectId, equals('demo-dreamfluenzer'));
+      expect(
+        AppConfig.defaultDemoOptions.projectId,
+        equals('demo-dreamfluenzer'),
+      );
       expect(AppConfig.defaultDemoOptions.apiKey, contains('DEMO'));
     });
 

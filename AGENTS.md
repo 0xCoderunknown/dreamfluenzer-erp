@@ -1,7 +1,7 @@
 # 🤖 AGENTS.md — AI Maintainer System Guide
 
 > **Target Audience:** Autonomous AI coding agents maintaining, extending, or refactoring DreamFluenzer ERP.  
-> **Human Role:** Edits constants in [`lib/config/agency_config.dart`](lib/config/agency_config.dart). Does NOT touch application architecture.  
+> **Agency Operator Role:** Maintains deployment-specific values in the ignored local `assets/config/config.json`. Does NOT touch application architecture.
 > **AI Role:** 100% responsible for feature implementation, bug fixes, state management, and maintaining architectural integrity.
 
 ---
@@ -12,7 +12,7 @@ The codebase follows Clean Architecture with strict separation between pure Dart
 
 ```
 lib/
-├── config/        # ONLY editable layer for human operators (business constants & messages)
+├── config/        # Safe defaults, runtime configuration, Firestore constants
 ├── domain/        # Pure domain constraints & validation rules (FroyoRules, AppEnums)
 ├── engines/       # PURE DART computational engines (RevenueEngine, DashboardAuditor)
 ├── models/        # Immutable domain schemas & Firestore DTOs with copyWith
@@ -48,17 +48,18 @@ When modifying any part of this system, you must strictly uphold these domain la
 * Every mutation that alters creator money, assignment, or project status must log an event via [`AuditLoggerService`](lib/services/audit_logger_service.dart).
 
 ### Law 4: Modular Presentation & Barrel Exports
-* Keep presentation files under 500 lines for maximum AI maintainability and zero search/replace collisions.
-* Component domains (`project`, `creator`, `client`, `lead`, `proposal`, `common`) maintain root barrel files (e.g. `campaign_widgets.dart`, `creator_dialogs.dart`, `proposal_widgets.dart`) that re-export sub-components to ensure 100% backwards-compatible screen imports.
+* Keep presentation files under 500 lines for AI maintainability. The invariant gate enforces this limit for screens and widgets.
+* Use existing domain barrel files when available. Update a barrel when adding public components; do not add a barrel solely to wrap a single module.
 
 ---
 
 ## 3. Human Configuration Boundary & Dual-Tier Credentials
 
-* **Dual-Tier Config Law:** 
+* **Dual-Tier Config Law:**
   - Private credentials (real Firebase API keys, real bank accounts, real UPI IDs) belong **exclusively** in [`assets/config/config.json`](assets/config/config.json) (which is `.gitignore`d).
   - Open-source defaults belong in [`assets/config/config.demo.json`](assets/config/config.demo.json) and [`lib/config/agency_config.dart`](lib/config/agency_config.dart).
   - [`AppConfig.load()`](lib/config/app_config.dart) dynamically loads `config.json` when present, or gracefully falls back to `config.demo.json`.
+  - Agency operators edit their local `config.json`; AI maintainers own changes to application defaults and architecture.
 * **Zero Secret Leakage:** Never hardcode URLs, private keys, company tax numbers, bank accounts, or credentials directly into Dart source files.
 
 ---
@@ -83,23 +84,18 @@ When modifying any part of this system, you must strictly uphold these domain la
 1. Keep every presentation file strictly under **500 lines** (ideally 200–350 lines).
 2. Decompose sub-sections into sibling files in the same domain folder (e.g. `lib/widgets/project/`).
 3. Re-export all sub-modules through the domain's root barrel file (e.g. `project_widgets.dart`, `campaign_widgets.dart`).
-4. Screens must **only** import the root barrel file, never private sub-modules.
+4. Screens should import the existing domain barrel when one covers the component; otherwise use the module's current public import pattern.
 
 ---
 
 ## 5. Verification Protocol (Run Before Concluding Any Task)
 
-Before reporting any coding task as complete, you must run and verify:
+Before reporting any coding task as complete, run the same gate CI uses:
 
 ```bash
-# 1. Complete AI Invariant Gate (Line counts, secret leaks, analyzer, tests):
+# Checks repository Dart formatting, presentation file sizes, source/config secrets,
+# analysis, and the full test suite.
 dart run tool/verify_invariants.dart
-
-# 2. Fast Linter:
-flutter analyze
-
-# 3. Fast Test Suite:
-flutter test
 ```
 
 If any check fails, you must resolve the issue before responding to the user.

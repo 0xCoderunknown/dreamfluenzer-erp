@@ -423,4 +423,3 @@ class _ProjectColumn extends StatelessWidget {
     );
   }
 }
-

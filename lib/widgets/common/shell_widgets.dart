@@ -148,7 +148,10 @@ class NavUserSection extends StatelessWidget {
               children: [
                 Text(
                   AgencyConfig.adminDisplayName,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   AgencyConfig.websiteUrl,

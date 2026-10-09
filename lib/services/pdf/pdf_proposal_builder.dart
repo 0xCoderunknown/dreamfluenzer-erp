@@ -30,9 +30,8 @@ class PdfProposalBuilder {
     final fonts = _fonts();
     final now = DateTime.now();
     final dateStr = DateFormat('dd MMMM yyyy').format(now);
-    final validUntil = DateFormat(
-      'dd MMMM yyyy',
-    ).format(now.add(const Duration(days: 30)));
+    final validUntil = DateFormat('dd MMMM yyyy')
+        .format(now.add(const Duration(days: 30)));
 
     final cardDataList = proposal.creators.map((pc) {
       final original = creatorProvider.creators.firstWhere(
@@ -122,11 +121,7 @@ class PdfProposalBuilder {
             ),
 
           pw.SizedBox(height: _Dt.sp5),
-          buildSectionLabel(
-            'SECTION 02',
-            'WHAT YOU ARE GETTING',
-            fonts: fonts,
-          ),
+          buildSectionLabel('SECTION 02', 'WHAT YOU ARE GETTING', fonts: fonts),
           pw.SizedBox(height: _Dt.sp2),
           buildMetricsDashboard(
             fonts: fonts,

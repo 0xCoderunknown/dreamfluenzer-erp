@@ -114,9 +114,8 @@ class _CreatorRosterScreenState extends State<CreatorRosterScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Theme(
-                  data: Theme.of(
-                    context,
-                  ).copyWith(dividerColor: Colors.transparent),
+                  data: Theme.of(context)
+                      .copyWith(dividerColor: Colors.transparent),
                   child: ExpansionTile(
                     title: Text(
                       'Inactive Creators (${inactiveCreators.length})',

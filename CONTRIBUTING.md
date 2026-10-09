@@ -4,8 +4,11 @@ Thank you for your interest! This project is maintained primarily by AI agents, 
 
 ## Development Environment
 
+Follow [`AGENTS.md`](AGENTS.md) as the canonical source for AI-maintenance rules and
+business invariants.
+
 **Prerequisites:**
-- Flutter SDK (stable channel, 3.x or later)
+- Flutter 3.47.6
 - Firebase CLI: `npm install -g firebase-tools`
 - FlutterFire CLI: `dart pub global activate flutterfire_cli`
 - A Firebase project with Firestore, Auth enabled
@@ -24,9 +27,9 @@ flutterfire configure
 #    Option B — manual: copy and fill the example file
 cp lib/firebase_options.dart.example lib/firebase_options.dart
 
-# 4. Configure your agency (edit only this file)
-#    Fill in your agency name, billing details, etc.
-nano lib/config/agency_config.dart
+# 4. Configure local agency settings (never commit this file)
+cp assets/config/config.demo.json assets/config/config.json
+# Fill in your agency name and billing details in assets/config/config.json
 
 # 5. Run the app
 flutter run -d chrome
@@ -48,34 +51,18 @@ This project follows Clean Architecture. The layers (from innermost to outermost
 
 **The #1 rule:** dependencies only point inward. Screens call Providers. Providers call Services and Engines. Engines call Domain. Never the reverse.
 
-## The Froyo Rules
-
-`lib/domain/froyo_rules.dart` contains the two non-negotiable financial safety guards:
-
-1. **Archive Lock** — A project cannot be completed/archived if any creator's work is still in-flight or live creators remain unpaid.
-2. **Advance Safety Net** — Creator advances cannot exceed the client advance pool for that project.
-
-**Never bypass these checks.** Every archival and advance disbursement path must invoke `FroyoRules`.
-
-## Code Style
-
-- Follow `analysis_options.yaml` (extends `flutter_lints`).
-- All `fromMap` / `fromFirestore` parsers must use safe casting: `(m['field'] as num?)?.toDouble() ?? 0.0`.
-- All multi-document mutations must use `WriteBatch` or `Transaction`.
-- All mutations that affect money, assignment, or project status must log via `AuditLoggerService`.
-
 ## Before Submitting
 
 ```bash
-flutter analyze  # Must output: No issues found!
-flutter test     # Must output: All tests passed!
+dart run tool/verify_invariants.dart
 ```
 
-Both must be clean before any PR will be reviewed.
+This is the same quality gate used in CI. It checks formatting, presentation file
+sizes, repository source/config secrets, analysis, and the full test suite.
 
 ## Submitting a PR
 
 1. Fork the repo and create a feature branch: `git checkout -b feat/my-feature`
 2. Make changes, keep commits focused.
-3. Run analyze + test (see above).
+3. Run the quality gate (see above).
 4. Open a PR against `main` with a clear description of what changed and why.

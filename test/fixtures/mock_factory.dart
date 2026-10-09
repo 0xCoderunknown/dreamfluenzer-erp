@@ -96,7 +96,8 @@ class MockFactory {
       agreedPayout: agreedPayout,
       pipelineStatus: pipelineStatus,
       isPaid: isPaid,
-      deliverables: deliverables ??
+      deliverables:
+          deliverables ??
           const [Deliverable(type: DeliverableType.reel, quantity: 1)],
       advancePaid: advancePaid,
       allocatedItems: allocatedItems ?? [dummyAllocatedItem()],
@@ -226,25 +227,29 @@ class MockFactory {
       status: status,
       createdAt: createdAt ?? DateTime(2026, 10, 1),
       internalNotes: internalNotes,
-      creators: creators ?? [
-        const ProposedCreator(
-          creatorId: 'creator-1',
-          name: 'Ananya Sharma',
-          baseRate: 25000.0,
-          proposedAdvance: 10000.0,
-          deliverables: [
-            Deliverable(type: DeliverableType.reel, quantity: 2),
+      creators:
+          creators ??
+          [
+            const ProposedCreator(
+              creatorId: 'creator-1',
+              name: 'Ananya Sharma',
+              baseRate: 25000.0,
+              proposedAdvance: 10000.0,
+              deliverables: [
+                Deliverable(type: DeliverableType.reel, quantity: 2),
+              ],
+            ),
           ],
-        ),
-      ],
-      addOns: addOns ?? [
-        const PitchAddOn(
-          id: 'addon-1',
-          creatorId: 'creator-1',
-          description: 'Whitelisting Ads Rights',
-          price: 5000.0,
-        ),
-      ],
+      addOns:
+          addOns ??
+          [
+            const PitchAddOn(
+              id: 'addon-1',
+              creatorId: 'creator-1',
+              description: 'Whitelisting Ads Rights',
+              price: 5000.0,
+            ),
+          ],
     );
   }
 

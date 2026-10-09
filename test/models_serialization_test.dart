@@ -53,44 +53,56 @@ void main() {
       expect(reconstructed.title, equals(original.title));
       expect(reconstructed.expenses, equals(original.expenses));
       expect(reconstructed.inventoryPool.length, equals(1));
-      expect(reconstructed.inventoryPool.first.itemName, equals('Lipstick Kit'));
-      expect(reconstructed.assignedCreators.length, equals(1));
-      expect(reconstructed.assignedCreators.first.creatorName, equals('Jane Doe'));
-      expect(reconstructed.assignedCreators.first.allocatedItems.length, equals(1));
-    });
-
-    test('Creator fromMap / toMap roundtrip preserves all operational fields', () {
-      final original = MockFactory.dummyCreator(
-        id: 'creator-777',
-        fullName: 'Rohan Mehra',
-        handle: 'rohan_travels',
-        status: CreatorStatus.active,
-        type: CreatorType.influencer,
-        primaryCategory: PrimaryCategory.tech,
-        secondaryNiche: 'Trekking',
-        baseRate: 35000.0,
-        followerCount: 220000,
-        upiId: 'rohan@okaxis',
-        location: 'Delhi',
-        rating: 4.9,
-        strikeLevel: 0,
+      expect(
+        reconstructed.inventoryPool.first.itemName,
+        equals('Lipstick Kit'),
       );
-
-      final map = original.toMap();
-      final reconstructed = Creator.fromMap(map, id: original.id);
-
-      expect(reconstructed.id, equals(original.id));
-      expect(reconstructed.fullName, equals(original.fullName));
-      expect(reconstructed.handle, equals(original.handle));
-      expect(reconstructed.status, equals(original.status));
-      expect(reconstructed.type, equals(original.type));
-      expect(reconstructed.primaryCategory, equals(original.primaryCategory));
-      expect(reconstructed.baseRate, equals(original.baseRate));
-      expect(reconstructed.followerCount, equals(original.followerCount));
-      expect(reconstructed.upiId, equals(original.upiId));
-      expect(reconstructed.location, equals(original.location));
-      expect(reconstructed.rating, equals(original.rating));
+      expect(reconstructed.assignedCreators.length, equals(1));
+      expect(
+        reconstructed.assignedCreators.first.creatorName,
+        equals('Jane Doe'),
+      );
+      expect(
+        reconstructed.assignedCreators.first.allocatedItems.length,
+        equals(1),
+      );
     });
+
+    test(
+      'Creator fromMap / toMap roundtrip preserves all operational fields',
+      () {
+        final original = MockFactory.dummyCreator(
+          id: 'creator-777',
+          fullName: 'Rohan Mehra',
+          handle: 'rohan_travels',
+          status: CreatorStatus.active,
+          type: CreatorType.influencer,
+          primaryCategory: PrimaryCategory.tech,
+          secondaryNiche: 'Trekking',
+          baseRate: 35000.0,
+          followerCount: 220000,
+          upiId: 'rohan@okaxis',
+          location: 'Delhi',
+          rating: 4.9,
+          strikeLevel: 0,
+        );
+
+        final map = original.toMap();
+        final reconstructed = Creator.fromMap(map, id: original.id);
+
+        expect(reconstructed.id, equals(original.id));
+        expect(reconstructed.fullName, equals(original.fullName));
+        expect(reconstructed.handle, equals(original.handle));
+        expect(reconstructed.status, equals(original.status));
+        expect(reconstructed.type, equals(original.type));
+        expect(reconstructed.primaryCategory, equals(original.primaryCategory));
+        expect(reconstructed.baseRate, equals(original.baseRate));
+        expect(reconstructed.followerCount, equals(original.followerCount));
+        expect(reconstructed.upiId, equals(original.upiId));
+        expect(reconstructed.location, equals(original.location));
+        expect(reconstructed.rating, equals(original.rating));
+      },
+    );
 
     test('Client fromMap / toMap roundtrip preserves company info & tier', () {
       final original = MockFactory.dummyClient(
@@ -109,42 +121,51 @@ void main() {
       expect(reconstructed.email, equals(original.email));
     });
 
-    test('Lead fromMap / toMap roundtrip preserves pipeline status & budget', () {
-      final original = MockFactory.dummyLead(
-        id: 'lead-555',
-        businessName: 'Sugar Cosmetics',
-        estimatedBudget: 80000.0,
-        status: LeadStatus.pitched,
-        primaryCategory: PrimaryCategory.skincare,
-      );
+    test(
+      'Lead fromMap / toMap roundtrip preserves pipeline status & budget',
+      () {
+        final original = MockFactory.dummyLead(
+          id: 'lead-555',
+          businessName: 'Sugar Cosmetics',
+          estimatedBudget: 80000.0,
+          status: LeadStatus.pitched,
+          primaryCategory: PrimaryCategory.skincare,
+        );
 
-      final map = original.toMap();
-      final reconstructed = Lead.fromMap(map, id: original.id);
+        final map = original.toMap();
+        final reconstructed = Lead.fromMap(map, id: original.id);
 
-      expect(reconstructed.id, equals(original.id));
-      expect(reconstructed.businessName, equals(original.businessName));
-      expect(reconstructed.estimatedBudget, equals(original.estimatedBudget));
-      expect(reconstructed.status, equals(original.status));
-      expect(reconstructed.primaryCategory, equals(original.primaryCategory));
-    });
+        expect(reconstructed.id, equals(original.id));
+        expect(reconstructed.businessName, equals(original.businessName));
+        expect(reconstructed.estimatedBudget, equals(original.estimatedBudget));
+        expect(reconstructed.status, equals(original.status));
+        expect(reconstructed.primaryCategory, equals(original.primaryCategory));
+      },
+    );
 
-    test('Proposal fromMap / toMap roundtrip preserves add-ons and deliverables', () {
-      final original = MockFactory.dummyProposal(
-        id: 'prop-444',
-        leadId: 'lead-555',
-        agencyFee: 20000.0,
-      );
+    test(
+      'Proposal fromMap / toMap roundtrip preserves add-ons and deliverables',
+      () {
+        final original = MockFactory.dummyProposal(
+          id: 'prop-444',
+          leadId: 'lead-555',
+          agencyFee: 20000.0,
+        );
 
-      final map = original.toMap();
-      final reconstructed = Proposal.fromMap(map, id: original.id);
+        final map = original.toMap();
+        final reconstructed = Proposal.fromMap(map, id: original.id);
 
-      expect(reconstructed.id, equals(original.id));
-      expect(reconstructed.leadId, equals(original.leadId));
-      expect(reconstructed.agencyFee, equals(original.agencyFee));
-      expect(reconstructed.creators.length, equals(1));
-      expect(reconstructed.addOns.length, equals(1));
-      expect(reconstructed.addOns.first.description, equals('Whitelisting Ads Rights'));
-    });
+        expect(reconstructed.id, equals(original.id));
+        expect(reconstructed.leadId, equals(original.leadId));
+        expect(reconstructed.agencyFee, equals(original.agencyFee));
+        expect(reconstructed.creators.length, equals(1));
+        expect(reconstructed.addOns.length, equals(1));
+        expect(
+          reconstructed.addOns.first.description,
+          equals('Whitelisting Ads Rights'),
+        );
+      },
+    );
 
     test('LogEvent fromMap / toMap roundtrip preserves audit fields', () {
       final original = MockFactory.dummyLogEvent(

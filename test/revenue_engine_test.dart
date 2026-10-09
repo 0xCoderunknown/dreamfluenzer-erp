@@ -87,65 +87,68 @@ void main() {
   });
 
   group('RevenueEngine — Cashflow & Advance Pool Guard', () {
-    test('Calculates available advance pool subtracting other creator advances', () {
-      final project = Project(
-        id: 'p1',
-        clientId: 'c1',
-        projectName: 'Test Proj',
-        leadName: '',
-        dealType: DealType.cash,
-        status: ProjectStatus.active,
-        deadline: DateTime.now(),
-        billingModel: BillingModel.oneOff,
-        durationMonths: 1,
-        baseBudget: 100000,
-        isGstExclusive: false,
-        advanceReceived: 50000,
-        createdAt: DateTime.now(),
-      );
+    test(
+      'Calculates available advance pool subtracting other creator advances',
+      () {
+        final project = Project(
+          id: 'p1',
+          clientId: 'c1',
+          projectName: 'Test Proj',
+          leadName: '',
+          dealType: DealType.cash,
+          status: ProjectStatus.active,
+          deadline: DateTime.now(),
+          billingModel: BillingModel.oneOff,
+          durationMonths: 1,
+          baseBudget: 100000,
+          isGstExclusive: false,
+          advanceReceived: 50000,
+          createdAt: DateTime.now(),
+        );
 
-      final campaigns = [
-        Campaign(
-          id: 'camp1',
-          projectId: 'p1',
-          title: 'Camp 1',
-          cycleEndDate: DateTime.now(),
-          expenses: 0,
-          assignedCreators: [
-            AssignedCreator(
-              creatorId: 'c1',
-              creatorName: 'Creator 1',
-              individualDeadline: DateTime.now(),
-              agreedPayout: 30000,
-              pipelineStatus: PipelineStatus.draftRequested,
-              isPaid: false,
-              advancePaid: 20000,
-              deliverables: [],
-            ),
-            AssignedCreator(
-              creatorId: 'c2',
-              creatorName: 'Creator 2',
-              individualDeadline: DateTime.now(),
-              agreedPayout: 20000,
-              pipelineStatus: PipelineStatus.draftRequested,
-              isPaid: false,
-              advancePaid: 0,
-              deliverables: [],
-            ),
-          ],
-        ),
-      ];
+        final campaigns = [
+          Campaign(
+            id: 'camp1',
+            projectId: 'p1',
+            title: 'Camp 1',
+            cycleEndDate: DateTime.now(),
+            expenses: 0,
+            assignedCreators: [
+              AssignedCreator(
+                creatorId: 'c1',
+                creatorName: 'Creator 1',
+                individualDeadline: DateTime.now(),
+                agreedPayout: 30000,
+                pipelineStatus: PipelineStatus.draftRequested,
+                isPaid: false,
+                advancePaid: 20000,
+                deliverables: [],
+              ),
+              AssignedCreator(
+                creatorId: 'c2',
+                creatorName: 'Creator 2',
+                individualDeadline: DateTime.now(),
+                agreedPayout: 20000,
+                pipelineStatus: PipelineStatus.draftRequested,
+                isPaid: false,
+                advancePaid: 0,
+                deliverables: [],
+              ),
+            ],
+          ),
+        ];
 
-      // Checking pool available for Creator 2
-      final pool = RevenueEngine.calculateAvailableAdvancePool(
-        project,
-        campaigns,
-        'c2',
-        'camp1',
-      );
+        // Checking pool available for Creator 2
+        final pool = RevenueEngine.calculateAvailableAdvancePool(
+          project,
+          campaigns,
+          'c2',
+          'camp1',
+        );
 
-      expect(pool, 30000.0); // 50000 - 20000 = 30000
-    });
+        expect(pool, 30000.0); // 50000 - 20000 = 30000
+      },
+    );
 
     test('Advance pool never returns negative values', () {
       final project = Project(
@@ -252,7 +255,10 @@ void main() {
         ),
       ];
 
-      final logistics = RevenueEngine.calculateProjectLogistics(project, campaigns);
+      final logistics = RevenueEngine.calculateProjectLogistics(
+        project,
+        campaigns,
+      );
 
       expect(logistics.totalGmvBudget, 25000.0);
       expect(logistics.totalDistributedGmv, 10000.0);

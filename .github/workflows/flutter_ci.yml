@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  analyze_and_test:
-    name: Analyze & Test
+  quality_gate:
+    name: AI Maintainer Quality Gate
     runs-on: ubuntu-latest
 
     steps:
@@ -19,12 +19,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: 3.47.6
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze (zero issues required)
-        run: flutter analyze
-
-      - name: Run tests (all must pass)
-        run: flutter test
+      - name: Run AI maintainer quality gate
+        run: dart run tool/verify_invariants.dart

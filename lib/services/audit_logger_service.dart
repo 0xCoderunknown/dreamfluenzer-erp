@@ -85,7 +85,6 @@ class AuditLoggerService {
     }
   }
 
-
   // ─── 4. FETCHING LOGS ───
   static Future<List<LogEvent>> getProjectLogs(
     FirestoreService service,

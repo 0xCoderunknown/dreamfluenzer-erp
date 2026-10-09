@@ -121,9 +121,8 @@ class _ProposalCommercialsSidebarState
   Widget build(BuildContext context) {
     final currencyFmt = NumberFormat('#,##0', 'en_IN');
 
-    final activeCreatorId = widget.assignedCreators.any(
-      (c) => c.id == _selectedAddOnCreatorId,
-    )
+    final activeCreatorId =
+        widget.assignedCreators.any((c) => c.id == _selectedAddOnCreatorId)
         ? _selectedAddOnCreatorId
         : null;
 
@@ -325,20 +324,13 @@ class _ProposalCommercialsSidebarState
                           ProposalAddOnTile(
                             addOn: item,
                             onDelete: () {
-                              setState(
-                                () => widget.addOnsList.removeAt(idx),
-                              );
+                              setState(() => widget.addOnsList.removeAt(idx));
                               widget.onChanged?.call();
                             },
                           ),
                           if (linkedCc != null)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                12,
-                                2,
-                                0,
-                                8,
-                              ),
+                              padding: const EdgeInsets.fromLTRB(12, 2, 0, 8),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
@@ -374,15 +366,12 @@ class _ProposalCommercialsSidebarState
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.primaryPurple,
-                    side: const BorderSide(
-                      color: AppTheme.primaryPurple,
-                    ),
+                    side: const BorderSide(color: AppTheme.primaryPurple),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed:
-                      !widget.hasSelectedCreators || widget.isProcessing
+                  onPressed: !widget.hasSelectedCreators || widget.isProcessing
                       ? null
                       : widget.onSaveDraft,
                   icon: widget.isProcessing
@@ -413,8 +402,7 @@ class _ProposalCommercialsSidebarState
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed:
-                      !widget.hasSelectedCreators || widget.isProcessing
+                  onPressed: !widget.hasSelectedCreators || widget.isProcessing
                       ? null
                       : widget.onExportPdf,
                   icon: widget.isProcessing
@@ -426,16 +414,10 @@ class _ProposalCommercialsSidebarState
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(
-                          Icons.picture_as_pdf_rounded,
-                          size: 18,
-                        ),
+                      : const Icon(Icons.picture_as_pdf_rounded, size: 18),
                   label: const Text(
                     'Save & Export Client PDF',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
               ),

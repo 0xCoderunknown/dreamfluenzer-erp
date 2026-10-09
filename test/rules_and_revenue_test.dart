@@ -100,19 +100,25 @@ void main() {
         otherCreatorsTotalAdvance: 0.0,
       );
       expect(result.isValid, isFalse);
-      expect(result.message, contains('Advance cannot exceed the total agreed payout'));
+      expect(
+        result.message,
+        contains('Advance cannot exceed the total agreed payout'),
+      );
     });
 
-    test('Fails when requested advance exceeds available client advance pool', () {
-      final result = FroyoRules.validateAdvancePayment(
-        requestedAdvance: 40000.0,
-        agreedPayout: 50000.0,
-        projectAdvanceReceived: 50000.0,
-        otherCreatorsTotalAdvance: 20000.0, // Remaining pool = 30,000
-      );
-      expect(result.isValid, isFalse);
-      expect(result.message, contains('Not enough client advance'));
-    });
+    test(
+      'Fails when requested advance exceeds available client advance pool',
+      () {
+        final result = FroyoRules.validateAdvancePayment(
+          requestedAdvance: 40000.0,
+          agreedPayout: 50000.0,
+          projectAdvanceReceived: 50000.0,
+          otherCreatorsTotalAdvance: 20000.0, // Remaining pool = 30,000
+        );
+        expect(result.isValid, isFalse);
+        expect(result.message, contains('Not enough client advance'));
+      },
+    );
 
     test('Passes when requested advance is within both payout and client advance pool', () {
       final result = FroyoRules.validateAdvancePayment(
@@ -182,7 +188,10 @@ void main() {
       );
       final result = FroyoRules.canArchiveProject(project, [campaign]);
       expect(result.isValid, isFalse);
-      expect(result.message, contains('Finish or drop their work before completing'));
+      expect(
+        result.message,
+        contains('Finish or drop their work before completing'),
+      );
     });
 
     test('Fails when creator posted live but remains unpaid', () {

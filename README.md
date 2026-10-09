@@ -4,7 +4,7 @@
 
 [![Flutter CI](https://github.com/0xCoderunknown/dreamfluenzer-erp/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/0xCoderunknown/dreamfluenzer-erp/actions/workflows/flutter_ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.6-blue?logo=flutter)](https://flutter.dev)
 
 A production-grade Flutter web app for managing the full lifecycle of a creator/influencer marketing agency: projects, campaigns, creator pipelines, client CRM, lead kanban, financial ledgers, GST invoices, and PDF proposals — all in one place.
 
@@ -12,7 +12,7 @@ A production-grade Flutter web app for managing the full lifecycle of a creator/
 
 ## 🚀 Getting Started
 
-**Prerequisites:** Flutter SDK (stable, 3.x+), a Firebase project with Firestore + Auth enabled.
+**Prerequisites:** Flutter 3.47.6, a Firebase project with Firestore + Auth enabled.
 
 ```bash
 # 1. Clone
@@ -28,9 +28,9 @@ flutterfire configure
 #    Option B — manual: copy the example and fill in your keys
 cp lib/firebase_options.dart.example lib/firebase_options.dart
 
-# 4. Configure your agency (the ONLY file you need to edit):
-#    Fill in your agency name, legal entity, bank/UPI details, etc.
-nano assets/config/config.json   # copy from assets/config/config.demo.json as a template
+# 4. Configure your local agency settings:
+cp assets/config/config.demo.json assets/config/config.json
+# Edit assets/config/config.json with your agency details. Never commit it.
 
 # 5. Run
 flutter run -d chrome
@@ -101,15 +101,17 @@ Private credentials **never** touch the repository:
 | `lib/firebase_options.dart.example` | ✅ committed | Template for manual setup |
 
 The app loads `config.json` at runtime. If absent, it falls back to `config.demo.json`.
+`lib/config/agency_config.dart` supplies safe defaults; deployment-specific values
+belong in the ignored local JSON file.
 
 ---
 
 ## 🤖 AI Maintenance
 
-This repository is designed for **100% AI-driven maintenance**. Human operators only edit `lib/config/agency_config.dart`. Everything else is handled by AI agents following the protocol in [`AGENTS.md`](AGENTS.md).
+This repository is designed for **100% AI-driven maintenance**. Agency operators manage
+deployment-specific values in their ignored local `assets/config/config.json`; AI
+maintainers own application code and follow [`AGENTS.md`](AGENTS.md).
 
-All contributions (human or AI) must pass:
-```bash
-flutter analyze  # Zero issues
-flutter test     # All tests pass
-```
+Before submitting a change, run `dart run tool/verify_invariants.dart`. It checks
+formatting, presentation file sizes, repository source/config secrets, analysis,
+and tests.
