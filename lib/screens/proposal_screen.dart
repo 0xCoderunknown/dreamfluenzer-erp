@@ -241,8 +241,7 @@ class _ProposalEngineScreenState extends State<ProposalEngineScreen> {
                               maxLines: 2,
                               decoration: const InputDecoration(
                                 labelText: 'Campaign Objective',
-                                hintText:
-                                    'e.g. Get 300+ new customers to visit our store via Instagram Reels.',
+                                hintText: 'e.g. Get 300+ new customers to visit our store via Instagram Reels.',
                                 border: OutlineInputBorder(),
                               ),
                               style: const TextStyle(fontSize: 13),
@@ -413,12 +412,10 @@ class _ProposalEngineScreenState extends State<ProposalEngineScreen> {
                 allCreators: rawCreators,
                 hasSelectedCreators: _selectedCreatorIds.isNotEmpty,
                 isProcessing: _isProcessing,
-                onSaveDraft: () => _compileAndCommitProposalToLedger(
-                  exportPdf: false,
-                ),
-                onExportPdf: () => _compileAndCommitProposalToLedger(
-                  exportPdf: true,
-                ),
+                onSaveDraft: () =>
+                    _compileAndCommitProposalToLedger(exportPdf: false),
+                onExportPdf: () =>
+                    _compileAndCommitProposalToLedger(exportPdf: true),
                 onChanged: () => setState(() {}),
               ),
             ),

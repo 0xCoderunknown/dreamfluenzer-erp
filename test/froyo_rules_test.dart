@@ -51,73 +51,79 @@ void main() {
       );
     });
 
-    test('Fails when an assigned creator is still mid-pipeline (Reviewing)', () {
-      final campaigns = [
-        Campaign(
-          id: 'camp1',
-          projectId: 'p1',
-          title: 'Live Campaign',
-          cycleEndDate: DateTime.now(),
-          expenses: 0,
-          assignedCreators: [
-            AssignedCreator(
-              creatorId: 'cr1',
-              creatorName: 'Rahul Sharma',
-              individualDeadline: DateTime.now(),
-              agreedPayout: 10000,
-              pipelineStatus: PipelineStatus.reviewing,
-              isPaid: false,
-              deliverables: [],
-            ),
-          ],
-        ),
-      ];
+    test(
+      'Fails when an assigned creator is still mid-pipeline (Reviewing)',
+      () {
+        final campaigns = [
+          Campaign(
+            id: 'camp1',
+            projectId: 'p1',
+            title: 'Live Campaign',
+            cycleEndDate: DateTime.now(),
+            expenses: 0,
+            assignedCreators: [
+              AssignedCreator(
+                creatorId: 'cr1',
+                creatorName: 'Rahul Sharma',
+                individualDeadline: DateTime.now(),
+                agreedPayout: 10000,
+                pipelineStatus: PipelineStatus.reviewing,
+                isPaid: false,
+                deliverables: [],
+              ),
+            ],
+          ),
+        ];
 
-      final result = FroyoRules.canArchiveProject(baseProject, campaigns);
+        final result = FroyoRules.canArchiveProject(baseProject, campaigns);
 
-      expect(result.isValid, isFalse);
-      expect(
-        result.message,
-        RuleMessages.creatorWorkInProgress(
-          'Rahul Sharma',
-          PipelineStatus.reviewing.value,
-        ),
-      );
-    });
+        expect(result.isValid, isFalse);
+        expect(
+          result.message,
+          RuleMessages.creatorWorkInProgress(
+            'Rahul Sharma',
+            PipelineStatus.reviewing.value,
+          ),
+        );
+      },
+    );
 
-    test('Fails when creator reached postedLive but is not yet marked isPaid', () {
-      final campaigns = [
-        Campaign(
-          id: 'camp1',
-          projectId: 'p1',
-          title: 'Live Campaign',
-          cycleEndDate: DateTime.now(),
-          expenses: 0,
-          assignedCreators: [
-            AssignedCreator(
-              creatorId: 'cr1',
-              creatorName: 'Aarav Patel',
-              individualDeadline: DateTime.now(),
-              agreedPayout: 15000,
-              pipelineStatus: PipelineStatus.postedLive,
-              isPaid: false,
-              deliverables: [],
-            ),
-          ],
-        ),
-      ];
+    test(
+      'Fails when creator reached postedLive but is not yet marked isPaid',
+      () {
+        final campaigns = [
+          Campaign(
+            id: 'camp1',
+            projectId: 'p1',
+            title: 'Live Campaign',
+            cycleEndDate: DateTime.now(),
+            expenses: 0,
+            assignedCreators: [
+              AssignedCreator(
+                creatorId: 'cr1',
+                creatorName: 'Aarav Patel',
+                individualDeadline: DateTime.now(),
+                agreedPayout: 15000,
+                pipelineStatus: PipelineStatus.postedLive,
+                isPaid: false,
+                deliverables: [],
+              ),
+            ],
+          ),
+        ];
 
-      final result = FroyoRules.canArchiveProject(baseProject, campaigns);
+        final result = FroyoRules.canArchiveProject(baseProject, campaigns);
 
-      expect(result.isValid, isFalse);
-      expect(
-        result.message,
-        RuleMessages.creatorUnpaidAfterPosting(
-          'Aarav Patel',
-          PipelineStatus.postedLive.value,
-        ),
-      );
-    });
+        expect(result.isValid, isFalse);
+        expect(
+          result.message,
+          RuleMessages.creatorUnpaidAfterPosting(
+            'Aarav Patel',
+            PipelineStatus.postedLive.value,
+          ),
+        );
+      },
+    );
 
     test('Passes when creator was dropped (terminal state)', () {
       final campaigns = [
@@ -189,18 +195,21 @@ void main() {
       expect(result.message, RuleMessages.advanceExceedsPayout(10000));
     });
 
-    test('Fails when requested advance exceeds agency cash balance from client', () {
-      // Client paid 20000 advance. Other creators took 15000. Agency only has 5000 left.
-      final result = FroyoRules.validateAdvancePayment(
-        requestedAdvance: 8000,
-        agreedPayout: 10000,
-        projectAdvanceReceived: 20000,
-        otherCreatorsTotalAdvance: 15000,
-      );
+    test(
+      'Fails when requested advance exceeds agency cash balance from client',
+      () {
+        // Client paid 20000 advance. Other creators took 15000. Agency only has 5000 left.
+        final result = FroyoRules.validateAdvancePayment(
+          requestedAdvance: 8000,
+          agreedPayout: 10000,
+          projectAdvanceReceived: 20000,
+          otherCreatorsTotalAdvance: 15000,
+        );
 
-      expect(result.isValid, isFalse);
-      expect(result.message, RuleMessages.insufficientClientFunds(5000));
-    });
+        expect(result.isValid, isFalse);
+        expect(result.message, RuleMessages.insufficientClientFunds(5000));
+      },
+    );
 
     test('Passes when advance is within agreed payout and agency balance', () {
       final result = FroyoRules.validateAdvancePayment(

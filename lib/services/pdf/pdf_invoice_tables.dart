@@ -248,10 +248,7 @@ pw.Widget buildInvoiceLineItemsTable({
         ),
         ...inventoryLines.map(
           (item) => pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 7,
-            ),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: const pw.BoxDecoration(
               border: pw.Border(
                 top: pw.BorderSide(color: _Dt.surfaceBorder, width: 0.5),
@@ -386,10 +383,7 @@ pw.Widget buildInvoiceFinancialSummary({
           valueColor: _Dt.successGreen,
         ),
         pw.Container(
-          padding: const pw.EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 12,
-          ),
+          padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: pw.BoxDecoration(
             color: invoice.balanceDue <= 0
                 ? _Dt.successGreenLight

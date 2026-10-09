@@ -165,10 +165,8 @@ class CampaignInventoryBay extends StatelessWidget {
               ),
               if (!isLocked)
                 InkWell(
-                  onTap: () => showAddEditInventoryDialog(
-                    context,
-                    existingItem: item,
-                  ),
+                  onTap: () =>
+                      showAddEditInventoryDialog(context, existingItem: item),
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

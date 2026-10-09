@@ -37,12 +37,8 @@ String getFriendlyDeliverableName(DeliverableType type, int quantity) {
   }
 }
 
-
 /// Running header shown on inner proposal pages
-pw.Widget buildRunningHeader({
-  required PdfFontSet fonts,
-  required Lead lead,
-}) {
+pw.Widget buildRunningHeader({required PdfFontSet fonts, required Lead lead}) {
   return pw.Column(
     children: [
       pw.Row(
@@ -142,9 +138,7 @@ pw.Widget buildSectionLabel(
         ),
       ),
       pw.SizedBox(width: _Dt.sp2),
-      pw.Expanded(
-        child: pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5),
-      ),
+      pw.Expanded(child: pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5)),
     ],
   );
 }
@@ -172,7 +166,8 @@ pw.Widget buildCreatorCard({
 
   final deliverableBullets = data.proposed.deliverables
       .map(
-        (d) => '${d.quantity}x ${getFriendlyDeliverableName(d.type, d.quantity)}',
+        (d) =>
+            '${d.quantity}x ${getFriendlyDeliverableName(d.type, d.quantity)}',
       )
       .toList();
 
@@ -209,11 +204,7 @@ pw.Widget buildCreatorCard({
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Container(
-                        width: 24,
-                        height: 2.5,
-                        color: accentColor,
-                      ),
+                      pw.Container(width: 24, height: 2.5, color: accentColor),
                       pw.SizedBox(height: _Dt.sp1),
                       pw.Text(
                         data.proposed.name,

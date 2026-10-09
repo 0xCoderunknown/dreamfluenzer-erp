@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -42,12 +43,15 @@ class AppConfig {
       final jsonStr = await rootBundle.loadString('assets/config/config.json');
       configData = jsonDecode(jsonStr) as Map<String, dynamic>;
       _isDemoMode = false;
-      debugPrint('[AppConfig] Loaded real private config from assets/config/config.json');
+      debugPrint(
+        '[AppConfig] Loaded real private config from assets/config/config.json',
+      );
     } catch (_) {
       // 2. Fall back to public demo config for open-source contributors
       try {
-        final demoStr =
-            await rootBundle.loadString('assets/config/config.demo.json');
+        final demoStr = await rootBundle.loadString(
+          'assets/config/config.demo.json',
+        );
         configData = jsonDecode(demoStr) as Map<String, dynamic>;
         _isDemoMode = true;
         debugPrint(
@@ -67,8 +71,7 @@ class AppConfig {
         messagingSenderId:
             fb['messagingSenderId'] as String? ??
             defaultDemoOptions.messagingSenderId,
-        projectId:
-            fb['projectId'] as String? ?? defaultDemoOptions.projectId,
+        projectId: fb['projectId'] as String? ?? defaultDemoOptions.projectId,
         authDomain:
             fb['authDomain'] as String? ?? defaultDemoOptions.authDomain,
         storageBucket:

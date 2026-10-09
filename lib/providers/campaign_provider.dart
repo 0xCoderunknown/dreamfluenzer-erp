@@ -52,15 +52,12 @@ class CampaignProvider extends ChangeNotifier {
             }
           },
         )
-        .listen(
-          (list) {
-            _campaigns = list.whereType<Campaign>().toList();
-            _isLoading = false;
-            _error = null;
-            notifyListeners();
-          },
-          onError: (err) => _handleError("Global Campaign Stream", err),
-        );
+        .listen((list) {
+          _campaigns = list.whereType<Campaign>().toList();
+          _isLoading = false;
+          _error = null;
+          notifyListeners();
+        }, onError: (err) => _handleError("Global Campaign Stream", err));
   }
 
   /// Sets the active project focus for contextual views without purging global state.

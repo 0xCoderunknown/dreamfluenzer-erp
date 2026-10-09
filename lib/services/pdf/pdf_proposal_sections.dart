@@ -84,11 +84,7 @@ pw.Widget buildMetricsDashboard({
         color: _Dt.brandPurple,
       ),
       KpiData(value: '$totalReels', label: 'Reels', color: _Dt.brandPurple),
-      KpiData(
-        value: '$totalStories',
-        label: 'Stories',
-        color: _Dt.brandPurple,
-      ),
+      KpiData(value: '$totalStories', label: 'Stories', color: _Dt.brandPurple),
       const KpiData(
         value: '~4 Weeks',
         label: 'Campaign Duration',
@@ -184,10 +180,7 @@ pw.Widget buildPricingSection({
             fonts: fonts,
           ),
         pw.Container(
-          padding: const pw.EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 12,
-          ),
+          padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: const pw.BoxDecoration(
             color: _Dt.brandPurpleLight,
             borderRadius: pw.BorderRadius.only(

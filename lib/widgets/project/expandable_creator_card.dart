@@ -433,10 +433,6 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
     );
   }
 
-
-
-
-
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,

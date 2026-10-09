@@ -326,8 +326,7 @@ class _CampaignPanelState extends State<CampaignPanel> {
     showDreamConfirm(
       context,
       title: 'Delete Campaign?',
-      body:
-          'This will remove all creator assignments within this cycle. This cannot be undone.',
+      body: 'This will remove all creator assignments within this cycle. This cannot be undone.',
       confirmText: 'Delete Cycle',
       isDestructive: true,
     ).then((confirmed) async {

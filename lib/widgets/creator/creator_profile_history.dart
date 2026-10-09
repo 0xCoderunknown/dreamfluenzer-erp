@@ -233,4 +233,3 @@ class CreatorSplitCrmView extends StatelessWidget {
     );
   }
 }
-

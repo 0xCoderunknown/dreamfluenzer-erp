@@ -467,5 +467,4 @@ class CreatorProfileDialog extends StatelessWidget {
       ),
     );
   }
-
 }

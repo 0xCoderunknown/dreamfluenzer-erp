@@ -1,7 +1,7 @@
 import 'dart:io';
 
 /// Automated Invariant Verification Gate for AI Maintainers.
-/// Ensures zero secret leaks, adherence to file line limits, clean lints, and passing tests.
+/// Checks repository Dart formatting, presentation file sizes, secrets, analysis, and tests.
 void main() async {
   stdout.writeln('======================================================');
   stdout.writeln('🤖 DreamFluenzer ERP — AI Maintainer Invariant Gate');
@@ -9,86 +9,146 @@ void main() async {
 
   int exitCode = 0;
 
-  // 1. Check Line Length Limits (< 500 lines per presentation file)
-  stdout.writeln('🔍 [1/4] Checking file line count constraints (< 500 lines)...');
-  final libDir = Directory('lib');
-  final dartFiles = libDir
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.dart'));
+  stdout.writeln('🧹 [1/5] Checking repository Dart formatting...');
+  final repositoryFilesResult = await Process.run('git', [
+    'ls-files',
+    '-co',
+    '--exclude-standard',
+    '-z',
+  ], runInShell: true);
+  if (repositoryFilesResult.exitCode != 0) {
+    stdout.writeln(
+      '❌ Could not list repository files:\n'
+      '${repositoryFilesResult.stdout}${repositoryFilesResult.stderr}',
+    );
+    exitCode = 1;
+  } else {
+    final dartPaths = (repositoryFilesResult.stdout as String)
+        .split('\x00')
+        .where((path) => path.endsWith('.dart'))
+        .toList();
+    final formatResult = await Process.run('dart', [
+      'format',
+      '--output=none',
+      '--set-exit-if-changed',
+      ...dartPaths,
+    ], runInShell: true);
+    if (formatResult.exitCode != 0) {
+      stdout.writeln(
+        '❌ Dart formatting check failed:\n'
+        '${formatResult.stdout}${formatResult.stderr}',
+      );
+      exitCode = 1;
+    } else {
+      stdout.writeln('✅ All repository Dart files are formatted.');
+    }
+  }
 
-  final oversizedFiles = <Map<String, dynamic>>[];
-  for (final file in dartFiles) {
+  stdout.writeln(
+    '\n🔍 [2/5] Checking presentation file line limits (< 500)...',
+  );
+  final presentationFiles = [
+    ...Directory('lib/screens')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart')),
+    ...Directory('lib/widgets')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart')),
+  ];
+  final oversizedFiles = <Map<String, Object>>[];
+  for (final file in presentationFiles) {
     final lineCount = file.readAsLinesSync().length;
-    if (lineCount > 500) {
+    if (lineCount >= 500) {
       oversizedFiles.add({'path': file.path, 'lines': lineCount});
     }
   }
 
   if (oversizedFiles.isNotEmpty) {
     stdout.writeln(
-      '⚠️  Warning: ${oversizedFiles.length} file(s) exceed 500 lines (target for modular deconstruction):',
+      '❌ ${oversizedFiles.length} presentation file(s) exceed 500 lines:',
     );
     for (final f in oversizedFiles) {
       stdout.writeln('   - ${f['path']}: ${f['lines']} lines');
     }
+    exitCode = 1;
   } else {
-    stdout.writeln('✅ All files in lib/ are within the 500-line modular limit!');
+    stdout.writeln('✅ All presentation files are within the 500-line limit.');
   }
 
-  // 2. Secret Scan
-  stdout.writeln('\n🔒 [2/4] Scanning for hardcoded secrets & credentials...');
+  stdout.writeln(
+    '\n🔒 [3/5] Scanning repository source/config files for secrets...',
+  );
   final secretPatterns = [
     RegExp(r'AIzaSy[A-Za-z0-9_-]{33}'), // Firebase Web API key
     RegExp(r'sk-[A-Za-z0-9]{32,}'), // OpenAI / API key
-    RegExp(r'''password\s*=\s*['"][^'"]{6,}['"]''', caseSensitive: false),
+    RegExp(
+      r'''(?:password|secret|private[_-]?key|client[_-]?secret)\s*["']?\s*[:=]\s*["'][^'"\r\n]{6,}["']''',
+      caseSensitive: false,
+    ),
   ];
 
   final secretHits = <String>[];
-  for (final file in dartFiles) {
-    // Exclude examples, demo config, and gitignored firebase_options
-    if (file.path.contains('.example') ||
-        file.path.contains('demo') ||
-        file.path.contains('firebase_options.dart')) {
-      continue;
-    }
-    final content = file.readAsStringSync();
-    for (final pattern in secretPatterns) {
-      if (pattern.hasMatch(content)) {
-        secretHits.add('${file.path}: matched pattern ${pattern.pattern}');
+  if (repositoryFilesResult.exitCode == 0) {
+    final repositoryPaths = (repositoryFilesResult.stdout as String)
+        .split('\x00')
+        .where(
+          (path) => [
+            '.dart',
+            '.json',
+            '.yaml',
+            '.yml',
+            '.html',
+            '.md',
+            '.txt',
+          ].any(path.endsWith),
+        );
+    for (final path in repositoryPaths) {
+      if (path.contains('.example')) {
+        continue;
+      }
+      final file = File(path);
+      if (!file.existsSync()) {
+        continue;
+      }
+      final content = file.readAsStringSync();
+      for (final pattern in secretPatterns) {
+        if (pattern.hasMatch(content)) {
+          secretHits.add('$path: matched pattern ${pattern.pattern}');
+        }
       }
     }
   }
 
   if (secretHits.isNotEmpty) {
-    stdout.writeln('❌ FATAL: Potential hardcoded secret detected:');
+    stdout.writeln('❌ Potential hardcoded secret detected:');
     for (final hit in secretHits) {
       stdout.writeln('   - $hit');
     }
     exitCode = 1;
-  } else {
-    stdout.writeln('✅ Zero hardcoded secrets detected in Dart sources.');
+  } else if (repositoryFilesResult.exitCode == 0) {
+    stdout.writeln('✅ No repository source/config secrets detected.');
   }
 
-  // 3. Flutter Analyze
-  stdout.writeln('\n🩺 [3/4] Running flutter analyze...');
-  final analyzeResult = await Process.run(
-    'flutter',
-    ['analyze'],
-    runInShell: true,
-  );
+  stdout.writeln('\n🩺 [4/5] Running flutter analyze...');
+  final analyzeResult = await Process.run('flutter', [
+    'analyze',
+  ], runInShell: true);
   if (analyzeResult.exitCode != 0) {
-    stdout.writeln('❌ Analyzer reported issues:\n${analyzeResult.stdout}');
+    stdout.writeln(
+      '❌ Analyzer reported issues:\n'
+      '${analyzeResult.stdout}${analyzeResult.stderr}',
+    );
     exitCode = 1;
   } else {
     stdout.writeln('✅ Analyzer passed with zero issues!');
   }
 
-  // 4. Flutter Test
-  stdout.writeln('\n🧪 [4/4] Running all unit & contract tests...');
+  stdout.writeln('\n🧪 [5/5] Running all unit & contract tests...');
   final testResult = await Process.run('flutter', ['test'], runInShell: true);
   if (testResult.exitCode != 0) {
-    stdout.writeln('❌ Tests failed:\n${testResult.stdout}');
+    stdout.writeln('❌ Tests failed:\n${testResult.stdout}${testResult.stderr}');
     exitCode = 1;
   } else {
     stdout.writeln('✅ All unit, engine, and serialization tests passed!');
@@ -98,7 +158,9 @@ void main() async {
   if (exitCode == 0) {
     stdout.writeln('🎉 ALL INVARIANT GATES PASSED! Safe to commit & conclude.');
   } else {
-    stdout.writeln('❌ INVARIANT VIOLATIONS DETECTED. Resolve before finishing.');
+    stdout.writeln(
+      '❌ INVARIANT VIOLATIONS DETECTED. Resolve before finishing.',
+    );
   }
   stdout.writeln('======================================================');
 

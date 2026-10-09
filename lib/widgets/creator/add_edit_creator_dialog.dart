@@ -294,7 +294,8 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                           children: [
                             Expanded(
                               child: CreatorFormField(
-                                label: _selectedType == CreatorType.sandboxTrainee
+                                label:
+                                    _selectedType == CreatorType.sandboxTrainee
                                     ? 'Stipend (₹) *'
                                     : 'Base Rate (₹) *',
                                 controller: _rateCtrl,
@@ -343,7 +344,9 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                         CreatorFormField(
                           label: 'UPI ID',
                           controller: _upiCtrl,
-                          validator: Validators.optional(Validators.validateUpi),
+                          validator: Validators.optional(
+                            Validators.validateUpi,
+                          ),
                         ),
                         const SizedBox(height: 16),
 

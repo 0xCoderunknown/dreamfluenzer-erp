@@ -289,8 +289,7 @@ class _ProjectCreationWizardState extends State<ProjectCreationWizard> {
                               setState(() => _selectedBillingModel = v),
                           durationMonthsController: _durationMonthsController,
                           baseBudgetController: _baseBudgetController,
-                          advanceReceivedController:
-                              _advanceReceivedController,
+                          advanceReceivedController: _advanceReceivedController,
                           gmvBudgetController: _gmvBudgetController,
                           isGstExclusive: _isGstExclusive,
                           onGstExclusiveChanged: (v) =>

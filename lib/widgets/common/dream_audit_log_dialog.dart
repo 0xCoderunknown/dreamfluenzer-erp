@@ -217,9 +217,8 @@ class _TimelineItem extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        DateFormat(
-                          'dd MMM yyyy, hh:mm a',
-                        ).format(log.timestamp),
+                        DateFormat('dd MMM yyyy, hh:mm a')
+                            .format(log.timestamp),
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,
@@ -305,4 +304,3 @@ class _TimelineItem extends StatelessWidget {
     );
   }
 }
-
