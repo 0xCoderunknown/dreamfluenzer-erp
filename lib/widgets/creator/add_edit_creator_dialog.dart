@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/app_enums.dart';
-import '../../engines/crm_analytics_engine.dart';
 import '../../models/creator_model.dart';
-import '../../providers/campaign_provider.dart';
 import '../../providers/creator_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
+import 'creator_form_sections.dart';
 
 class AddEditCreatorDialog extends StatefulWidget {
   final Creator? creator;
@@ -120,20 +117,20 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                         Row(
                           children: [
                             Expanded(
-                              child: _formField(
-                                'Full Name *',
-                                _nameCtrl,
-                                val: (v) =>
+                              child: CreatorFormField(
+                                label: 'Full Name *',
+                                controller: _nameCtrl,
+                                validator: (v) =>
                                     Validators.validateRequired(v, 'Name'),
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: _formField(
-                                'Instagram Handle *',
-                                _handleCtrl,
+                              child: CreatorFormField(
+                                label: 'Instagram Handle *',
+                                controller: _handleCtrl,
                                 prefix: '@',
-                                val: Validators.validateInstagramHandle,
+                                validator: Validators.validateInstagramHandle,
                               ),
                             ),
                           ],
@@ -273,9 +270,9 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                               ),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: _formField(
-                                  'Secondary Niche',
-                                  _secondaryNicheCtrl,
+                                child: CreatorFormField(
+                                  label: 'Secondary Niche',
+                                  controller: _secondaryNicheCtrl,
                                   hint: 'e.g. Skincare, Bridal, Cosmetics',
                                 ),
                               ),
@@ -284,7 +281,11 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                           const SizedBox(height: 16),
                         ],
 
-                        _buildVacationToggleSwitch(),
+                        CreatorVacationSwitchTile(
+                          busyRange: _busyRange,
+                          onRangeChanged: (range) =>
+                              setState(() => _busyRange = range),
+                        ),
                         const SizedBox(height: 16),
 
                         _sectionLabel('Financial Details'),
@@ -292,13 +293,13 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: _formField(
-                                _selectedType == CreatorType.sandboxTrainee
+                              child: CreatorFormField(
+                                label: _selectedType == CreatorType.sandboxTrainee
                                     ? 'Stipend (₹) *'
                                     : 'Base Rate (₹) *',
-                                _rateCtrl,
+                                controller: _rateCtrl,
                                 digitsOnly: true,
-                                val: (v) =>
+                                validator: (v) =>
                                     Validators.validateRequired(v, 'Rate'),
                               ),
                             ),
@@ -307,9 +308,9 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _formField(
-                                    'Follower Count',
-                                    _followerCtrl,
+                                  CreatorFormField(
+                                    label: 'Follower Count',
+                                    controller: _followerCtrl,
                                     digitsOnly: true,
                                   ),
                                 ],
@@ -322,26 +323,35 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
                         Row(
                           children: [
                             Expanded(
-                              child: _formField(
-                                'Contact Number *',
-                                _phoneCtrl,
-                                val: Validators.validatePhone,
+                              child: CreatorFormField(
+                                label: 'Contact Number *',
+                                controller: _phoneCtrl,
+                                validator: Validators.validatePhone,
                               ),
                             ),
                             const SizedBox(width: 16),
-                            Expanded(child: _formField('City', _locCtrl)),
+                            Expanded(
+                              child: CreatorFormField(
+                                label: 'City',
+                                controller: _locCtrl,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
 
-                        _formField(
-                          'UPI ID',
-                          _upiCtrl,
-                          val: Validators.optional(Validators.validateUpi),
+                        CreatorFormField(
+                          label: 'UPI ID',
+                          controller: _upiCtrl,
+                          validator: Validators.optional(Validators.validateUpi),
                         ),
                         const SizedBox(height: 16),
 
-                        _formField('Internal Notes', _notesCtrl, maxLines: 3),
+                        CreatorFormField(
+                          label: 'Internal Notes',
+                          controller: _notesCtrl,
+                          maxLines: 3,
+                        ),
                       ],
                     ),
                   ),
@@ -358,55 +368,16 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
     );
   }
 
-  Widget _buildVacationToggleSwitch() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: SwitchListTile(
-        title: const Text(
-          'Mark as Away / Unavailable',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        subtitle: Text(
-          _busyRange != null
-              ? 'Away: ${DateFormat('dd MMM').format(_busyRange!.start)} to ${DateFormat('dd MMM').format(_busyRange!.end)}'
-              : 'Currently active and available for campaigns.',
-          style: TextStyle(
-            fontSize: 12,
-            color: _busyRange != null
-                ? Colors.red.shade600
-                : Colors.grey.shade600,
-          ),
-        ),
-        value: _busyRange != null,
-        activeThumbColor: Colors.red,
-        onChanged: (isTurnedOn) async {
-          if (isTurnedOn) {
-            final minDate = DateTime.now().add(const Duration(days: 30));
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: minDate,
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-              helpText: 'Select Away Dates',
-            );
-            if (picked != null) setState(() => _busyRange = picked);
-          } else {
-            setState(() => _busyRange = null);
-          }
-        },
-      ),
-    );
-  }
-
   Widget _buildFooterRow(bool isNew) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (!isNew)
           TextButton.icon(
-            onPressed: () => _handleDeleteRequest(context, widget.creator!),
+            onPressed: () => showDeleteCreatorDialog(
+              context: context,
+              creator: widget.creator!,
+            ),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
             label: const Text('Delete Creator'),
@@ -469,68 +440,6 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
     );
   }
 
-  Future<void> _handleDeleteRequest(
-    BuildContext context,
-    Creator creator,
-  ) async {
-    final creatorProv = context.read<CreatorProvider>();
-    final campaignProv = context.read<CampaignProvider>();
-    final hasHistory = CrmAnalyticsEngine.getCampaignHistoryForCreator(
-      creator.id,
-      campaignProv.campaigns,
-    ).isNotEmpty;
-
-    final confirm = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              color: hasHistory ? Colors.orange : Colors.red,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              hasHistory
-                  ? 'Deactivate Creator Profile?'
-                  : 'Permanently Delete Creator?',
-            ),
-          ],
-        ),
-        content: Text(
-          hasHistory
-              ? 'This creator has campaign history. They will be marked as Inactive instead of being deleted.'
-              : 'Are you sure? This will permanently delete this creator.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hasHistory ? Colors.orange : Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(hasHistory ? 'Mark Inactive' : 'Delete Forever'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && context.mounted) {
-      if (hasHistory) {
-        await creatorProv.deactivateCreator(creator.id, actor: 'Admin');
-      } else {
-        await creatorProv.deleteCreator(creator.id);
-      }
-      if (context.mounted) Navigator.pop(context);
-    }
-  }
-
   Widget _sectionLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 12),
@@ -543,49 +452,6 @@ class AddEditCreatorDialogState extends State<AddEditCreatorDialog> {
           letterSpacing: 1,
         ),
       ),
-    );
-  }
-
-  Widget _formField(
-    String label,
-    TextEditingController ctrl, {
-    bool digitsOnly = false,
-    int maxLines = 1,
-    String? prefix,
-    String? hint,
-    String? Function(String?)? val,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primaryDark,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: ctrl,
-          validator: val,
-          maxLines: maxLines,
-          textInputAction: TextInputAction.next,
-          inputFormatters: digitsOnly
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null,
-          decoration: InputDecoration(
-            prefixText: prefix,
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 13,
-              fontWeight: FontWeight.normal,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

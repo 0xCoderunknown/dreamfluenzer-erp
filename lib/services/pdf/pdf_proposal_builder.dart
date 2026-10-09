@@ -3,60 +3,22 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import '../../config/agency_config.dart';
 import '../../config/proposal_templates.dart';
 import '../../domain/app_enums.dart';
 import '../../models/creator_model.dart';
 import '../../models/lead_model.dart';
 import '../../models/proposal_model.dart';
 import '../../providers/creator_provider.dart';
+import 'pdf_proposal_cover.dart';
+import 'pdf_proposal_cover_and_creators.dart';
+import 'pdf_proposal_sections.dart';
 import 'pdf_theme.dart';
 
 typedef _Dt = PdfTheme;
 typedef _FontSet = PdfFontSet;
 
-class _CreatorCardData {
-  final ProposedCreator proposed;
-  final Creator original;
-  final List<PitchAddOn> linkedAddOns;
-
-  const _CreatorCardData({
-    required this.proposed,
-    required this.original,
-    required this.linkedAddOns,
-  });
-}
-
-class _KpiData {
-  final String value;
-  final String label;
-  final PdfColor color;
-
-  const _KpiData({
-    required this.value,
-    required this.label,
-    required this.color,
-  });
-}
-
 class PdfProposalBuilder {
   static _FontSet _fonts() => PdfFontSet.helvetica();
-
-  static String _getFriendlyDeliverableName(
-    DeliverableType type,
-    int quantity,
-  ) {
-    switch (type) {
-      case DeliverableType.reel:
-        return quantity == 1 ? 'Promotional Reel' : 'Promotional Reels';
-      case DeliverableType.post:
-        return quantity == 1 ? 'Promotional Post' : 'Promotional Posts';
-      case DeliverableType.story:
-        return quantity == 1 ? 'Story Mention' : 'Story Mentions';
-      case DeliverableType.video:
-        return quantity == 1 ? 'Promotional Video' : 'Promotional Videos';
-    }
-  }
 
   static Future<void> generatePitchPdf(
     Proposal proposal,
@@ -92,7 +54,7 @@ class PdfProposalBuilder {
           rating: 5,
         ),
       );
-      return _CreatorCardData(
+      return CreatorCardData(
         proposed: pc,
         original: original,
         linkedAddOns: proposal.addOns
@@ -109,7 +71,7 @@ class PdfProposalBuilder {
       pw.Page(
         pageFormat: PdfPageFormat.a4,
         margin: pw.EdgeInsets.zero,
-        build: (_) => _buildCoverPage(
+        build: (_) => buildCoverPage(
           fonts: fonts,
           lead: lead,
           proposal: proposal,
@@ -124,11 +86,11 @@ class PdfProposalBuilder {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 42, vertical: 38),
-        header: (_) => _buildRunningHeader(fonts: fonts, lead: lead),
+        header: (_) => buildRunningHeader(fonts: fonts, lead: lead),
         footer: (ctx) =>
-            _buildRunningFooter(context: ctx, fonts: fonts, dateStr: dateStr),
+            buildRunningFooter(context: ctx, fonts: fonts, dateStr: dateStr),
         build: (_) => [
-          _buildSectionLabel(
+          buildSectionLabel(
             'SECTION 01',
             'CREATORS IN THIS CAMPAIGN',
             fonts: fonts,
@@ -151,7 +113,7 @@ class PdfProposalBuilder {
             ...cardDataList.asMap().entries.map(
               (e) => pw.Padding(
                 padding: const pw.EdgeInsets.only(bottom: _Dt.sp2),
-                child: _buildCreatorCard(
+                child: buildCreatorCard(
                   data: e.value,
                   index: e.key,
                   fonts: fonts,
@@ -160,13 +122,13 @@ class PdfProposalBuilder {
             ),
 
           pw.SizedBox(height: _Dt.sp5),
-          _buildSectionLabel(
+          buildSectionLabel(
             'SECTION 02',
             'WHAT YOU ARE GETTING',
             fonts: fonts,
           ),
           pw.SizedBox(height: _Dt.sp2),
-          _buildMetricsDashboard(
+          buildMetricsDashboard(
             fonts: fonts,
             lead: lead,
             proposal: proposal,
@@ -175,9 +137,9 @@ class PdfProposalBuilder {
 
           pw.NewPage(),
 
-          _buildSectionLabel('SECTION 03', 'PRICING SUMMARY', fonts: fonts),
+          buildSectionLabel('SECTION 03', 'PRICING SUMMARY', fonts: fonts),
           pw.SizedBox(height: _Dt.sp3),
-          _buildPricingSection(fonts: fonts, proposal: proposal, fmt: fmt),
+          buildPricingSection(fonts: fonts, proposal: proposal, fmt: fmt),
           pw.SizedBox(height: _Dt.sp1),
           pw.Align(
             alignment: pw.Alignment.centerRight,
@@ -192,16 +154,16 @@ class PdfProposalBuilder {
           ),
           pw.SizedBox(height: _Dt.sp4),
 
-          _buildSectionLabel('SECTION 04', 'TERMS & CONDITIONS', fonts: fonts),
+          buildSectionLabel('SECTION 04', 'TERMS & CONDITIONS', fonts: fonts),
           pw.SizedBox(height: _Dt.sp3),
-          _buildGuidelinesPanel(
+          buildGuidelinesPanel(
             fonts: fonts,
             cardDataList: cardDataList,
             lead: lead,
             proposal: proposal,
           ),
           pw.SizedBox(height: _Dt.sp3),
-          _buildNextStepsActionPanel(fonts: fonts),
+          buildNextStepsActionPanel(fonts: fonts),
           pw.SizedBox(height: _Dt.sp3),
         ],
       ),
@@ -211,875 +173,5 @@ class PdfProposalBuilder {
       onLayout: (_) async => doc.save(),
       name: 'Proposal_${lead.businessName.replaceAll(' ', '_')}_$dateStr.pdf',
     );
-  }
-
-  static pw.Widget _buildCoverPage({
-    required _FontSet fonts,
-    required Lead lead,
-    required Proposal proposal,
-    required String dateStr,
-    required String validUntil,
-    required String planSubtitle,
-  }) {
-    final typeWordingParagraph = lead.customObjective.isNotEmpty
-        ? lead.customObjective
-        : ProposalTextBlueprintManager.getDeploymentMethodology(
-            proposal.proposalType,
-            lead.businessName,
-          );
-
-    return pw.Stack(
-      children: [
-        pw.Positioned.fill(child: pw.Container(color: _Dt.inkDeep)),
-        pw.Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: pw.Container(height: 5, color: _Dt.brandPurple),
-        ),
-        pw.Positioned(
-          left: 0,
-          top: 5,
-          bottom: 0,
-          child: pw.Container(width: 3, color: _Dt.brandPurpleSubtle),
-        ),
-        pw.Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: pw.Container(
-            height: 110,
-            color: const PdfColor.fromInt(0xFF0D0820),
-          ),
-        ),
-        pw.Positioned(
-          right: 0,
-          top: 5,
-          bottom: 110,
-          child: pw.Container(
-            width: 180,
-            color: const PdfColor.fromInt(0xFF160D30),
-          ),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.fromLTRB(52, 76, 52, 40),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                AgencyConfig.agencyName,
-                style: pw.TextStyle(
-                  font: fonts.bold,
-                  fontSize: _Dt.tsMicro + 1.5,
-                  color: _Dt.brandPurple,
-                  letterSpacing: 4,
-                ),
-              ),
-              pw.SizedBox(height: _Dt.spHalf),
-              pw.Container(width: 32, height: 2, color: _Dt.brandPurpleSubtle),
-              pw.SizedBox(height: _Dt.sp6),
-              pw.Container(
-                padding: const pw.EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
-                ),
-                decoration: pw.BoxDecoration(
-                  color: const PdfColor.fromInt(0xFF2D1F4E),
-                  borderRadius: pw.BorderRadius.circular(3),
-                ),
-                child: pw.Text(
-                  'CAMPAIGN PROPOSAL',
-                  style: pw.TextStyle(
-                    font: fonts.semiBold,
-                    fontSize: _Dt.tsCaption,
-                    color: _Dt.brandPurpleMid,
-                    letterSpacing: 2.5,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: _Dt.sp4),
-              pw.Text(
-                lead.businessName,
-                style: pw.TextStyle(
-                  font: fonts.bold,
-                  fontSize: _Dt.tsDisplay,
-                  color: _Dt.surfaceWhite,
-                  lineSpacing: 4,
-                ),
-              ),
-              pw.SizedBox(height: _Dt.sp2),
-              pw.Text(
-                planSubtitle,
-                style: pw.TextStyle(
-                  font: fonts.regular,
-                  fontSize: _Dt.tsH3,
-                  color: _Dt.brandPurpleMid,
-                  lineSpacing: 1.5,
-                ),
-              ),
-              pw.SizedBox(height: _Dt.sp5),
-              pw.Container(
-                padding: const pw.EdgeInsets.all(16),
-                decoration: pw.BoxDecoration(
-                  color: const PdfColor.fromInt(0xFF1A1038),
-                  borderRadius: pw.BorderRadius.circular(6),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Row(
-                      children: [
-                        pw.Container(
-                          width: 3,
-                          height: 10,
-                          color: _Dt.brandPurple,
-                        ),
-                        pw.SizedBox(width: _Dt.sp1),
-                        pw.Text(
-                          'ABOUT THIS PROPOSAL',
-                          style: pw.TextStyle(
-                            font: fonts.semiBold,
-                            fontSize: _Dt.tsMicro,
-                            color: _Dt.brandPurpleMid,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                    pw.SizedBox(height: _Dt.sp2),
-                    pw.Text(
-                      typeWordingParagraph,
-                      style: pw.TextStyle(
-                        font: fonts.regular,
-                        fontSize: _Dt.tsH3,
-                        color: const PdfColor.fromInt(0xFFD8D0F0),
-                        lineSpacing: 1.8,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              pw.Spacer(),
-              pw.Container(
-                height: 0.5,
-                color: const PdfColor.fromInt(0xFF2D1F4E),
-              ),
-              pw.SizedBox(height: _Dt.sp2),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Row(
-                    children: [
-                      pw.Text(
-                        'Proposal Issued: $dateStr',
-                        style: pw.TextStyle(
-                          font: fonts.medium,
-                          fontSize: _Dt.tsMicro + 0.5,
-                          color: _Dt.inkGhost,
-                        ),
-                      ),
-                      pw.Text(
-                        '   |   ',
-                        style: const pw.TextStyle(
-                          color: PdfColor.fromInt(0xFF3D2870),
-                        ),
-                      ),
-                      pw.Text(
-                        'Valid Until: $validUntil',
-                        style: pw.TextStyle(
-                          font: fonts.bold,
-                          fontSize: _Dt.tsMicro + 0.5,
-                          color: _Dt.brandPurpleSubtle,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.Text(
-                    '${AgencyConfig.defaultCity} Operational HQ',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: _Dt.tsMicro,
-                      color: _Dt.inkMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  static pw.Widget _buildRunningHeader({
-    required _FontSet fonts,
-    required Lead lead,
-  }) {
-    return pw.Column(
-      children: [
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Text(
-              AgencyConfig.agencyName,
-              style: pw.TextStyle(
-                font: fonts.bold,
-                fontSize: _Dt.tsCaption,
-                color: _Dt.brandPurple,
-                letterSpacing: 2,
-              ),
-            ),
-            pw.Text(
-              'Campaign Proposal — ${lead.businessName}',
-              style: pw.TextStyle(
-                font: fonts.regular,
-                fontSize: _Dt.tsMicro,
-                color: _Dt.inkGhost,
-              ),
-            ),
-          ],
-        ),
-        pw.SizedBox(height: _Dt.sp1),
-        pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5),
-        pw.SizedBox(height: _Dt.sp2),
-      ],
-    );
-  }
-
-  static pw.Widget _buildRunningFooter({
-    required pw.Context context,
-    required _FontSet fonts,
-    required String dateStr,
-  }) {
-    return pw.Column(
-      children: [
-        pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5),
-        pw.SizedBox(height: _Dt.spHalf),
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-          children: [
-            pw.Text(
-              'Confidential — ${AgencyConfig.agencyName} — $dateStr',
-              style: pw.TextStyle(
-                font: fonts.regular,
-                fontSize: _Dt.tsMicro,
-                color: _Dt.inkGhost,
-              ),
-            ),
-            pw.Text(
-              'Page ${context.pageNumber} / ${context.pagesCount}',
-              style: pw.TextStyle(
-                font: fonts.semiBold,
-                fontSize: _Dt.tsMicro,
-                color: _Dt.inkMuted,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  static pw.Widget _buildSectionLabel(
-    String number,
-    String title, {
-    required _FontSet fonts,
-  }) {
-    return pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: [
-        pw.Container(
-          padding: const pw.EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-          color: _Dt.brandPurple,
-          child: pw.Text(
-            number,
-            style: pw.TextStyle(
-              font: fonts.bold,
-              fontSize: _Dt.tsMicro - 0.5,
-              color: _Dt.surfaceWhite,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        pw.SizedBox(width: _Dt.sp1),
-        pw.Text(
-          title,
-          style: pw.TextStyle(
-            font: fonts.bold,
-            fontSize: _Dt.tsCaption + 0.5,
-            color: _Dt.inkDark,
-            letterSpacing: 1.2,
-          ),
-        ),
-        pw.SizedBox(width: _Dt.sp2),
-        pw.Expanded(
-          child: pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5),
-        ),
-      ],
-    );
-  }
-
-  static pw.Widget _buildCreatorCard({
-    required _CreatorCardData data,
-    required int index,
-    required _FontSet fonts,
-  }) {
-    final type = data.original.type;
-    final PdfColor accentColor = type == CreatorType.ugcCreator
-        ? _Dt.ugcAccent
-        : (data.original.location.isNotEmpty
-              ? _Dt.localAccent
-              : _Dt.influencerAccent);
-    final PdfColor accentLight = type == CreatorType.ugcCreator
-        ? _Dt.ugcAccentLight
-        : (data.original.location.isNotEmpty
-              ? _Dt.localAccentLight
-              : _Dt.influencerAccentLight);
-    final String typeBadgeLabel = type == CreatorType.ugcCreator
-        ? 'CONTENT CREATOR'
-        : (data.original.location.isNotEmpty ? 'LOCAL CREATOR' : 'INFLUENCER');
-
-    final deliverableBullets = data.proposed.deliverables
-        .map(
-          (d) =>
-              '${d.quantity}x ${_getFriendlyDeliverableName(d.type, d.quantity)}',
-        )
-        .toList();
-
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        color: _Dt.surfaceWhite,
-        border: pw.Border.all(color: _Dt.surfaceBorder, width: 0.5),
-        borderRadius: pw.BorderRadius.circular(8),
-      ),
-      child: pw.Row(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Expanded(
-            flex: 42,
-            child: pw.Container(
-              padding: const pw.EdgeInsets.all(14),
-              decoration: pw.BoxDecoration(
-                color: accentLight,
-                borderRadius: const pw.BorderRadius.only(
-                  topLeft: pw.Radius.circular(8),
-                  bottomLeft: pw.Radius.circular(8),
-                ),
-              ),
-              child: pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Container(
-                    width: 4,
-                    height: 60,
-                    color: accentColor,
-                    margin: const pw.EdgeInsets.only(right: 10),
-                  ),
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Container(
-                          width: 24,
-                          height: 2.5,
-                          color: accentColor,
-                        ),
-                        pw.SizedBox(height: _Dt.sp1),
-                        pw.Text(
-                          data.proposed.name,
-                          style: pw.TextStyle(
-                            font: fonts.bold,
-                            fontSize: _Dt.tsH3 + 0.5,
-                            color: _Dt.inkDark,
-                          ),
-                        ),
-                        pw.SizedBox(height: 2),
-                        pw.Text(
-                          '@${data.original.handle}',
-                          style: pw.TextStyle(
-                            font: fonts.regular,
-                            fontSize: _Dt.tsMicro + 0.5,
-                            color: _Dt.inkMuted,
-                          ),
-                        ),
-                        pw.SizedBox(height: _Dt.sp2),
-                        pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 3,
-                          ),
-                          decoration: pw.BoxDecoration(
-                            color: accentColor,
-                            borderRadius: pw.BorderRadius.circular(3),
-                          ),
-                          child: pw.Text(
-                            typeBadgeLabel,
-                            style: pw.TextStyle(
-                              font: fonts.bold,
-                              fontSize: _Dt.tsMicro - 0.5,
-                              color: _Dt.surfaceWhite,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          pw.Expanded(
-            flex: 58,
-            child: pw.Container(
-              padding: const pw.EdgeInsets.all(14),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'DELIVERABLES',
-                    style: pw.TextStyle(
-                      font: fonts.bold,
-                      fontSize: _Dt.tsMicro,
-                      color: _Dt.inkGhost,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                  pw.SizedBox(height: _Dt.sp1),
-                  if (deliverableBullets.isEmpty)
-                    pw.Text(
-                      'No deliverables added yet.',
-                      style: pw.TextStyle(
-                        font: fonts.regular,
-                        fontSize: _Dt.tsCaption,
-                        color: _Dt.inkGhost,
-                        fontStyle: pw.FontStyle.italic,
-                      ),
-                    )
-                  else
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: deliverableBullets.map((item) {
-                        return pw.Padding(
-                          padding: const pw.EdgeInsets.only(bottom: 5),
-                          child: pw.Row(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
-                            children: [
-                              pw.Container(
-                                width: 4,
-                                height: 4,
-                                margin: const pw.EdgeInsets.only(
-                                  top: 3,
-                                  right: 6,
-                                ),
-                                decoration: pw.BoxDecoration(
-                                  color: accentColor,
-                                  shape: pw.BoxShape.circle,
-                                ),
-                              ),
-                              pw.Expanded(
-                                child: pw.Text(
-                                  item,
-                                  style: pw.TextStyle(
-                                    font: fonts.medium,
-                                    fontSize: _Dt.tsCaption,
-                                    color: _Dt.inkMid,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  pw.SizedBox(height: _Dt.sp1),
-                  pw.Container(height: 0.5, color: _Dt.surfaceBorder),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Usage Rights: ${data.proposed.usageRightsDuration}',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: _Dt.tsMicro,
-                      color: _Dt.inkMuted,
-                    ),
-                  ),
-                  pw.Text(
-                    'Exclusivity: ${data.proposed.categoryExclusivity}',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: _Dt.tsMicro,
-                      color: _Dt.inkMuted,
-                    ),
-                  ),
-                  if (data.linkedAddOns.isNotEmpty) ...[
-                    pw.SizedBox(height: 4),
-                    ...data.linkedAddOns.map(
-                      (addOn) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(top: 1),
-                        child: pw.Text(
-                          '+ Add-on: ${addOn.description}',
-                          style: pw.TextStyle(
-                            font: fonts.regular,
-                            fontSize: _Dt.tsMicro,
-                            color: _Dt.brandPurpleDark,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildMetricsDashboard({
-    required _FontSet fonts,
-    required Lead lead,
-    required Proposal proposal,
-    required List<_CreatorCardData> cardDataList,
-  }) {
-    int totalReels = 0, totalStories = 0, totalPosts = 0, totalVideos = 0;
-    for (final card in cardDataList) {
-      for (final d in card.proposed.deliverables) {
-        switch (d.type) {
-          case DeliverableType.reel:
-            totalReels += d.quantity;
-            break;
-          case DeliverableType.story:
-            totalStories += d.quantity;
-            break;
-          case DeliverableType.post:
-            totalPosts += d.quantity;
-            break;
-          case DeliverableType.video:
-            totalVideos += d.quantity;
-            break;
-        }
-      }
-    }
-
-    final List<_KpiData> dynamicKpis = [];
-    if (proposal.proposalType == ProposalType.ugcProduction) {
-      dynamicKpis.addAll([
-        _KpiData(
-          value: '${cardDataList.length}',
-          label: 'Content Creators',
-          color: _Dt.brandPurple,
-        ),
-        _KpiData(
-          value: '${totalReels + totalVideos}',
-          label: 'Videos',
-          color: _Dt.brandPurple,
-        ),
-        _KpiData(
-          value: '$totalPosts',
-          label: 'Photos / Posts',
-          color: _Dt.brandPurple,
-        ),
-        const _KpiData(
-          value: '~3 Weeks',
-          label: 'Turnaround Time',
-          color: _Dt.successGreen,
-        ),
-      ]);
-    } else {
-      dynamicKpis.addAll([
-        _KpiData(
-          value: '${cardDataList.length}',
-          label: 'Creators',
-          color: _Dt.brandPurple,
-        ),
-        _KpiData(value: '$totalReels', label: 'Reels', color: _Dt.brandPurple),
-        _KpiData(
-          value: '$totalStories',
-          label: 'Stories',
-          color: _Dt.brandPurple,
-        ),
-        const _KpiData(
-          value: '~4 Weeks',
-          label: 'Campaign Duration',
-          color: _Dt.successGreen,
-        ),
-      ]);
-    }
-
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        color: _Dt.surfaceNeutral,
-        border: pw.Border.all(color: _Dt.surfaceBorder, width: 0.5),
-        borderRadius: pw.BorderRadius.circular(8),
-      ),
-      child: pw.Column(
-        children: [
-          pw.Padding(
-            padding: const pw.EdgeInsets.all(14),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
-              children: _buildKpiRow(kpis: dynamicKpis, fonts: fonts),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildGuidelinesPanel({
-    required _FontSet fonts,
-    required List<_CreatorCardData> cardDataList,
-    required Lead lead,
-    required Proposal proposal,
-  }) {
-    final items = ProposalTextBlueprintManager.getMandatoryGuidelines(
-      proposal.proposalType,
-    );
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(16),
-      decoration: pw.BoxDecoration(
-        color: _Dt.surfaceWhite,
-        border: pw.Border.all(color: _Dt.surfaceBorder, width: 0.5),
-        borderRadius: pw.BorderRadius.circular(8),
-      ),
-      child: pw.Column(
-        children: items.asMap().entries.map((entry) {
-          final isLast = entry.key == items.length - 1;
-          final parts = entry.value.split(': ');
-          final String title = parts.isNotEmpty ? parts[0] : '';
-          final String body = parts.length > 1 ? parts[1] : '';
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Container(
-                    width: 16,
-                    height: 16,
-                    margin: const pw.EdgeInsets.only(right: 8),
-                    decoration: pw.BoxDecoration(
-                      color: _Dt.brandPurpleLight,
-                      borderRadius: pw.BorderRadius.circular(3),
-                    ),
-                    child: pw.Center(
-                      child: pw.Text(
-                        '${entry.key + 1}',
-                        style: pw.TextStyle(
-                          font: fonts.bold,
-                          fontSize: _Dt.tsMicro,
-                          color: _Dt.brandPurple,
-                        ),
-                        textAlign: pw.TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  pw.Expanded(
-                    child: pw.RichText(
-                      text: pw.TextSpan(
-                        children: [
-                          pw.TextSpan(
-                            text: '$title: ',
-                            style: pw.TextStyle(
-                              font: fonts.bold,
-                              fontSize: _Dt.tsCaption,
-                              color: _Dt.inkDark,
-                            ),
-                          ),
-                          pw.TextSpan(
-                            text: body,
-                            style: pw.TextStyle(
-                              font: fonts.regular,
-                              fontSize: _Dt.tsCaption,
-                              color: _Dt.inkMid,
-                              lineSpacing: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (!isLast) ...[
-                pw.SizedBox(height: _Dt.sp1),
-                pw.Divider(color: _Dt.surfaceBorder, thickness: 0.5),
-                pw.SizedBox(height: _Dt.sp1),
-              ],
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  static pw.Widget _buildNextStepsActionPanel({required _FontSet fonts}) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(16),
-      decoration: pw.BoxDecoration(
-        color: _Dt.surfaceNeutral,
-        border: pw.Border.all(color: _Dt.surfaceBorder, width: 0.5),
-        borderRadius: pw.BorderRadius.circular(8),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Text(
-            'NEXT STEPS',
-            style: pw.TextStyle(
-              font: fonts.bold,
-              fontSize: _Dt.tsCaption,
-              color: _Dt.inkDark,
-              letterSpacing: 1,
-            ),
-          ),
-          pw.SizedBox(height: _Dt.sp1),
-          pw.Text(
-            '1. Let us know if you want to move forward — reach out to your point of contact at ${AgencyConfig.agencyName}.\n2. Pay the 50% advance to confirm your booking and lock in the creators and dates.\n3. Once payment is confirmed, we will share a brief and get the campaign started.',
-            style: pw.TextStyle(
-              font: fonts.regular,
-              fontSize: _Dt.tsMicro + 0.5,
-              color: _Dt.inkMid,
-              lineSpacing: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildPricingSection({
-    required _FontSet fonts,
-    required Proposal proposal,
-    required NumberFormat fmt,
-  }) {
-    final campaignCost = proposal.totalBaseCost + proposal.agencyFee;
-    final additionalCosts = proposal.totalAddOnsCost;
-    return pw.Container(
-      decoration: pw.BoxDecoration(
-        color: _Dt.surfaceWhite,
-        border: pw.Border.all(color: _Dt.surfaceBorder, width: 0.5),
-        borderRadius: pw.BorderRadius.circular(8),
-      ),
-      child: pw.Column(
-        children: [
-          _buildSummaryRow(
-            label: 'Campaign Fee',
-            value: 'Rs. ${fmt.format(campaignCost)}',
-            fonts: fonts,
-          ),
-          if (additionalCosts > 0)
-            _buildSummaryRow(
-              label: 'Additional Services (Logistics, On-location, etc.)',
-              value: 'Rs. ${fmt.format(additionalCosts)}',
-              fonts: fonts,
-            ),
-          pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
-            ),
-            decoration: const pw.BoxDecoration(
-              color: _Dt.brandPurpleLight,
-              borderRadius: pw.BorderRadius.only(
-                bottomLeft: pw.Radius.circular(8),
-                bottomRight: pw.Radius.circular(8),
-              ),
-            ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(
-                  'Total Amount',
-                  style: pw.TextStyle(
-                    font: fonts.bold,
-                    fontSize: _Dt.tsH3,
-                    color: _Dt.brandPurpleDark,
-                  ),
-                ),
-                pw.Text(
-                  'Rs. ${fmt.format(proposal.totalClientPrice)}',
-                  style: pw.TextStyle(
-                    font: fonts.bold,
-                    fontSize: _Dt.tsH2,
-                    color: _Dt.brandPurpleDark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildSummaryRow({
-    required String label,
-    required String value,
-    required _FontSet fonts,
-  }) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(
-            label,
-            style: pw.TextStyle(
-              font: fonts.regular,
-              fontSize: _Dt.tsCaption,
-              color: _Dt.inkMid,
-            ),
-          ),
-          pw.Text(
-            value,
-            style: pw.TextStyle(
-              font: fonts.bold,
-              fontSize: _Dt.tsCaption,
-              color: _Dt.inkDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static List<pw.Widget> _buildKpiRow({
-    required List<_KpiData> kpis,
-    required _FontSet fonts,
-  }) {
-    final widgets = <pw.Widget>[];
-    for (int i = 0; i < kpis.length; i++) {
-      widgets.add(
-        pw.Column(
-          children: [
-            pw.Text(
-              kpis[i].value,
-              style: pw.TextStyle(
-                font: fonts.bold,
-                fontSize: _Dt.tsH2,
-                color: kpis[i].color,
-              ),
-            ),
-            pw.SizedBox(height: 2),
-            pw.Text(
-              kpis[i].label,
-              style: pw.TextStyle(
-                font: fonts.regular,
-                fontSize: _Dt.tsMicro,
-                color: _Dt.inkMuted,
-              ),
-            ),
-          ],
-        ),
-      );
-      if (i < kpis.length - 1) {
-        widgets.add(
-          pw.Container(width: 0.5, height: 30, color: _Dt.surfaceBorder),
-        );
-      }
-    }
-    return widgets;
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../domain/app_enums.dart';
 import '../../domain/froyo_rules.dart';
@@ -8,6 +7,10 @@ import '../../models/project_model.dart';
 import '../../providers/campaign_provider.dart';
 import '../../theme/app_theme.dart';
 import '../common/ui_kit.dart';
+import 'creator_card_status_rows.dart';
+import 'creator_item_allocation_dialog.dart';
+import 'creator_logistics_tile.dart';
+import 'creator_submission_links_section.dart';
 
 class ExpandableCreatorCard extends StatefulWidget {
   final AssignedCreator creator;
@@ -158,7 +161,27 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLogisticsMode) return _buildLogisticsOnlyRow();
+    if (widget.isLogisticsMode) {
+      return CreatorLogisticsTile(
+        creator: widget.creator,
+        allocatedItems: _allocatedItems,
+        onStatusChanged: (item, val) {
+          setState(() {
+            final idx = _allocatedItems.indexWhere(
+              (i) => i.inventoryId == item.inventoryId,
+            );
+            _allocatedItems[idx] = AllocatedItem(
+              inventoryId: item.inventoryId,
+              itemName: item.itemName,
+              quantity: item.quantity,
+              status: val,
+              notes: item.notes,
+            );
+          });
+          _checkForChanges();
+        },
+      );
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -175,108 +198,6 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         title: _buildCardHeader(),
         children: [_buildEditForm()],
-      ),
-    );
-  }
-
-  Widget _buildLogisticsOnlyRow() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.orange.shade200),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _avatar(),
-              const SizedBox(width: 12),
-              Text(
-                widget.creator.creatorName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          if (_allocatedItems.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 12),
-              child: Text(
-                'No items allocated.',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
-              ),
-            )
-          else
-            ..._allocatedItems.map(
-              (item) => _buildExplicitLogisticsControls(item),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExplicitLogisticsControls(AllocatedItem item) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${item.quantity}x ${item.itemName}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: DropdownButtonFormField<AllocationStatus>(
-              initialValue: item.status,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-              ),
-              items: AllocationStatus.values
-                  .map(
-                    (s) => DropdownMenuItem(
-                      value: s,
-                      child: Text(
-                        s.value,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() {
-                    final idx = _allocatedItems.indexWhere(
-                      (i) => i.inventoryId == item.inventoryId,
-                    );
-                    _allocatedItems[idx] = AllocatedItem(
-                      inventoryId: item.inventoryId,
-                      itemName: item.itemName,
-                      quantity: item.quantity,
-                      status: val,
-                      notes: item.notes,
-                    );
-                  });
-                  _checkForChanges();
-                }
-              },
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -345,14 +266,50 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
           ),
           _buildStatusHeader('STATUS & PAYMENT'),
           const SizedBox(height: 16),
-          _formRow1(),
-          const SizedBox(height: 16),
-          _formRow2(),
+          CreatorCardStatusRows(
+            canChangePipeline: _canChangePipeline,
+            pipelineStatus: _pipelineStatus,
+            onPipelineStatusChanged: (val) {
+              setState(() => _pipelineStatus = val);
+              _checkForChanges();
+            },
+            canMarkPaid: _canMarkPaid,
+            isPaid: _isPaid,
+            onPaidChanged: (val) {
+              setState(() => _isPaid = val);
+              _checkForChanges();
+            },
+            advanceCtrl: _advanceCtrl,
+            hasError: _hasError,
+            errorMsg: _errorMsg,
+            onAdvanceChanged: _checkForChanges,
+            deadline: _deadline,
+            onPickDate: _pickDate,
+            isLocked: widget.isLocked,
+          ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Divider(height: 1),
           ),
-          _buildTrackingSection(),
+          CreatorSubmissionLinksSection(
+            allocatedItems: _allocatedItems,
+            isLocked: widget.isLocked,
+            onNotesChanged: (item, val) {
+              setState(() {
+                final idx = _allocatedItems.indexWhere(
+                  (i) => i.inventoryId == item.inventoryId,
+                );
+                _allocatedItems[idx] = AllocatedItem(
+                  inventoryId: item.inventoryId,
+                  itemName: item.itemName,
+                  quantity: item.quantity,
+                  status: item.status,
+                  notes: val,
+                );
+              });
+              _checkForChanges();
+            },
+          ),
           if (!widget.isLocked) _actionButtons(),
         ],
       ),
@@ -381,7 +338,32 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
             _buildStatusHeader('Allocated Products'),
             if (!widget.isLocked)
               TextButton.icon(
-                onPressed: _showOriginalItemDialog,
+                onPressed: () => showCreatorItemAllocationDialog(
+                  context: context,
+                  campaign: widget.campaign,
+                  creator: widget.creator,
+                  currentAllocations: _allocatedItems,
+                  onAllocated: (allocated) {
+                    setState(() {
+                      final existingIdx = _allocatedItems.indexWhere(
+                        (i) => i.inventoryId == allocated.inventoryId,
+                      );
+                      if (existingIdx >= 0) {
+                        final ex = _allocatedItems[existingIdx];
+                        _allocatedItems[existingIdx] = AllocatedItem(
+                          inventoryId: ex.inventoryId,
+                          itemName: ex.itemName,
+                          quantity: ex.quantity + allocated.quantity,
+                          status: ex.status,
+                          notes: ex.notes,
+                        );
+                      } else {
+                        _allocatedItems.add(allocated);
+                      }
+                    });
+                    _checkForChanges();
+                  },
+                ),
                 icon: const Icon(Icons.add, size: 14),
                 label: const Text(
                   'Allocate Item',
@@ -451,317 +433,9 @@ class ExpandableCreatorCardState extends State<ExpandableCreatorCard> {
     );
   }
 
-  Widget _buildTrackingSection() {
-    if (_allocatedItems.isEmpty) return const SizedBox.shrink();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildStatusHeader('Submission Links'),
-        const SizedBox(height: 16),
-        ..._allocatedItems.map(
-          (item) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    item.itemName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 5,
-                  child: TextFormField(
-                    initialValue: item.notes,
-                    enabled: !widget.isLocked,
-                    decoration: const InputDecoration(
-                      hintText: 'Paste your Google Drive link here',
-                      hintStyle: TextStyle(fontSize: 11, color: Colors.grey),
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      prefixIcon: Icon(Icons.link_rounded, size: 16),
-                    ),
-                    style: const TextStyle(fontSize: 12),
-                    onChanged: (val) {
-                      setState(() {
-                        final idx = _allocatedItems.indexWhere(
-                          (i) => i.inventoryId == item.inventoryId,
-                        );
-                        _allocatedItems[idx] = AllocatedItem(
-                          inventoryId: item.inventoryId,
-                          itemName: item.itemName,
-                          quantity: item.quantity,
-                          status: item.status,
-                          notes: val,
-                        );
-                      });
-                      _checkForChanges();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  void _showOriginalItemDialog() {
-    final availableItems = widget.campaign.inventoryPool.where((item) {
-      int usedElsewhere = 0;
-      for (var ac in widget.campaign.assignedCreators) {
-        if (ac.creatorId != widget.creator.creatorId) {
-          for (var alloc in ac.allocatedItems) {
-            if (alloc.inventoryId == item.id) usedElsewhere += alloc.quantity;
-          }
-        }
-      }
-      int usedHere = 0;
-      for (var alloc in _allocatedItems) {
-        if (alloc.inventoryId == item.id) usedHere += alloc.quantity;
-      }
-      return (item.totalQuantity - usedElsewhere - usedHere) > 0;
-    }).toList();
 
-    if (availableItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No inventory items left in the campaign pool.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    CampaignInventory? selectedItem;
-    final qtyCtrl = TextEditingController(text: '1');
-    String? errorText;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Allocate from Pool'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<CampaignInventory>(
-                items: availableItems
-                    .map(
-                      (i) =>
-                          DropdownMenuItem(value: i, child: Text(i.itemName)),
-                    )
-                    .toList(),
-                onChanged: (v) => setDialogState(() {
-                  selectedItem = v;
-                  errorText = null;
-                }),
-                decoration: const InputDecoration(labelText: 'Select Item'),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: qtyCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Quantity',
-                  errorText: errorText,
-                ),
-                onChanged: (_) => setDialogState(() => errorText = null),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (selectedItem == null) return;
-
-                final requestedQty = int.tryParse(qtyCtrl.text) ?? 0;
-                if (requestedQty <= 0) return;
-
-                int totalUsedElsewhere = 0;
-                for (var ac in widget.campaign.assignedCreators) {
-                  if (ac.creatorId != widget.creator.creatorId) {
-                    for (var item in ac.allocatedItems) {
-                      if (item.inventoryId == selectedItem!.id) {
-                        totalUsedElsewhere += item.quantity;
-                      }
-                    }
-                  }
-                }
-
-                int usedHere = 0;
-                for (var item in _allocatedItems) {
-                  if (item.inventoryId == selectedItem!.id) {
-                    usedHere += item.quantity;
-                  }
-                }
-
-                final availableQty =
-                    selectedItem!.totalQuantity - totalUsedElsewhere - usedHere;
-
-                if (requestedQty > availableQty) {
-                  setDialogState(() => errorText = 'Only $availableQty left!');
-                  return;
-                }
-
-                setState(() {
-                  final existingIdx = _allocatedItems.indexWhere(
-                    (i) => i.inventoryId == selectedItem!.id,
-                  );
-                  if (existingIdx >= 0) {
-                    final ex = _allocatedItems[existingIdx];
-                    _allocatedItems[existingIdx] = AllocatedItem(
-                      inventoryId: ex.inventoryId,
-                      itemName: ex.itemName,
-                      quantity: ex.quantity + requestedQty,
-                      status: ex.status,
-                      notes: ex.notes,
-                    );
-                  } else {
-                    _allocatedItems.add(
-                      AllocatedItem(
-                        inventoryId: selectedItem!.id,
-                        itemName: selectedItem!.itemName,
-                        quantity: requestedQty,
-                      ),
-                    );
-                  }
-                });
-
-                _checkForChanges();
-                Navigator.pop(ctx);
-              },
-              child: const Text('Allocate'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _formRow1() {
-    return Row(
-      children: [
-        Expanded(
-          child: Tooltip(
-            message: !_canChangePipeline
-                ? 'Cannot change status until all allocated items are received or returned.'
-                : '',
-            child: DropdownButtonFormField<PipelineStatus>(
-              initialValue: _pipelineStatus,
-              decoration: InputDecoration(
-                labelText: 'Status',
-                border: const OutlineInputBorder(),
-                isDense: true,
-                filled: !_canChangePipeline,
-                fillColor: Colors.grey.shade200,
-              ),
-              items: PipelineStatus.values
-                  .map((s) => DropdownMenuItem(value: s, child: Text(s.value)))
-                  .toList(),
-              onChanged: (widget.isLocked || !_canChangePipeline)
-                  ? null
-                  : (val) {
-                      if (val != null) {
-                        setState(() => _pipelineStatus = val);
-                        _checkForChanges();
-                      }
-                    },
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Tooltip(
-            message: !_canMarkPaid
-                ? 'Cannot pay until all returnable items have been returned.'
-                : '',
-            child: CheckboxListTile(
-              title: Text(
-                'Fully Paid',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: !_canMarkPaid ? Colors.grey : Colors.black,
-                ),
-              ),
-              value: _isPaid,
-              activeColor: Colors.green,
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              onChanged: (widget.isLocked || !_canMarkPaid)
-                  ? null
-                  : (val) {
-                      if (val != null) {
-                        setState(() => _isPaid = val);
-                        _checkForChanges();
-                      }
-                    },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _formRow2() {
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _advanceCtrl,
-            keyboardType: TextInputType.number,
-            enabled: !widget.isLocked,
-            decoration: InputDecoration(
-              labelText: 'Advance Paid (₹)',
-              border: const OutlineInputBorder(),
-              isDense: true,
-              errorText: _hasError ? _errorMsg : null,
-            ),
-            onChanged: (_) => _checkForChanges(),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: InkWell(
-            onTap: widget.isLocked ? null : _pickDate,
-            child: InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Creator Deadline',
-                border: OutlineInputBorder(),
-                isDense: true,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(DateFormat('dd MMM yyyy').format(_deadline)),
-                  const Icon(Icons.calendar_today, size: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
