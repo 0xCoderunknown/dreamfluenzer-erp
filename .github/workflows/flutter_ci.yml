@@ -19,7 +19,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.47.6
+          flutter-version: 3.47.8
 
       - name: Setup template Firebase config for CI
         run: cp lib/firebase_options.dart.example lib/firebase_options.dart
@@ -29,3 +29,4 @@ jobs:
 
       - name: Run AI maintainer quality gate
         run: dart run tool/verify_invariants.dart
+
